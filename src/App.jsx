@@ -1,15 +1,15 @@
 // src/App.jsx
-import React from 'react';
-import { Routes, Route } from 'react-router-dom';
+import React from "react";
+import { Routes, Route } from "react-router-dom";
 
-import Login from './pages/auth/Login';
-import Register from './pages/auth/Register';
-import ForgotPassword from './Pages/auth/forgotpassword';
-import ResetPassword from './pages/auth/ResetPassword';
-import ProductForm from './pages/admin/ProductForm';
-import ProductList from './pages/admin/ProductList';
-import UserDashboard from './pages/user/UserDashboard';
-import ConfirmCode from './pages/auth/ConfirmCode';
+import Login from "./pages/auth/Login";
+import Register from "./pages/auth/Register";
+import ForgotPassword from "./Pages/auth/forgotpassword";
+import ResetPassword from "./pages/auth/ResetPassword";
+import ProductForm from "./pages/admin/ProductForm";
+import ProductList from "./pages/admin/ProductList";
+import UserDashboard from "./pages/user/UserDashboard";
+import ConfirmCode from "./pages/auth/ConfirmCode";
 
 function App() {
   return (
@@ -20,7 +20,7 @@ function App() {
       <Route path="/resetpassword" element={<ResetPassword />} />
       <Route path="/forgotpassword" element={<ForgotPassword />} />
       <Route path="/confirmcode" element={<ConfirmCode />} />
-      
+
       <Route path="/user/dashboard" element={<UserDashboard />} />
       <Route path="/admin/productform" element={<ProductForm />} />
       <Route path="/admin/productlist" element={<ProductList />} />
