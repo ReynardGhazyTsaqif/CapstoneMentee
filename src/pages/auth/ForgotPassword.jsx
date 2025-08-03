@@ -1,34 +1,57 @@
 export default function ForgotPassword() {
   return (
     <>
-      <div className="flex flex-row-reverse w-full h-screen bg-gray-950 ">
-        <div className=" bg-white w-3/4 md:w-2/3 h-full rounded-tl-2xl rounded-bl-2xl">
-          <div className="flex mx-auto items-center mt-20">
-            <h1 className="text-black pl-20 text-4xl mb-6 md:text-2xl font-medium">
+      <div className="bg-gray-950 flex justify-center items-center md:justify-start md:flex-row-reverse w-full h-screen">
+        <div className="bg-white w-11/12 md:w-3/4 md:h-screen rounded-2xl md:rounded-tl-2xl md:rounded-bl-2xl md:rounded-tr-none md:rounded-br-none m-2 mr-0">
+          <div className="pt-10 px-6 md:pt-16 md:px-20">
+            <h1 className="text-2xl md:text-3xl text-black font-medium text-center md:text-left">
               Reset Password
             </h1>
           </div>
-          <div>
-            <form>
-              <h2 className="pr-2 mt-4 ml-20 font-medium">Password Baru</h2>
-              <input
-                type="text"
-                placeholder="masukan password"
-                className="w-3/5 border-2 border-gray-300 rounded-2xl p-2 mt-2 ml-20"
-              ></input>
-              <h2 className="pr-2 mt-4 ml-20 font-medium">
-                Konfirmasi Password
-              </h2>
-              <input
-                type="text"
-                placeholder="masukan konfirmasi password"
-                className="w-3/5 border-2 border-gray-300 rounded-2xl p-2 mt-2 ml-20 block"
-              ></input>
 
-              <br />
-              <button className="bg-black text-white w-3/5 rounded-2xl p-2 mt-4 ml-20 cursor-pointer">
-                Simpan Password
-              </button>
+          <div className="p-6 md:px-20">
+            <form className="mt-6 space-y-5">
+              {/* Grup Password */}
+              <div className="flex flex-col items-center md:items-start">
+                <label
+                  htmlFor="password"
+                  className="mb-1 self-stretch text-center md:text-left"
+                >
+                  Password
+                </label>
+                <input
+                  id="password"
+                  type="password"
+                  placeholder="Masukkan password"
+                  className="border-slate-200 md:w-3/4 w-5/6 border-2 rounded-2xl p-2"
+                />
+              </div>
+
+              {/* Grup Konfirmasi Password */}
+              <div className="flex flex-col items-center md:items-start">
+                <label
+                  htmlFor="confirm-password"
+                  className="mb-1 self-stretch text-center md:text-left"
+                >
+                  Konfirmasi Password
+                </label>
+                <input
+                  id="confirm-password"
+                  type="password"
+                  placeholder="Masukkan konfirmasi password"
+                  className="border-slate-200 md:w-3/4 w-5/6 border-2 rounded-2xl p-2"
+                />
+              </div>
+
+              {/* Tombol Simpan */}
+              <div className="pt-4 flex justify-center md:justify-start">
+                <button
+                  type="submit"
+                  className="bg-black text-white md:w-3/4 w-5/6 rounded-2xl p-2.5 font-semibold cursor-pointer hover:bg-gray-800 transition-colors"
+                >
+                  Simpan Password
+                </button>
+              </div>
             </form>
           </div>
         </div>

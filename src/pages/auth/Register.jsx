@@ -1,57 +1,105 @@
 export default function Register() {
   return (
     <>
-      <div className="flex flex-row-reverse w-full h-screen bg-gray-950 ">
-        <div className=" bg-white w-3/4 md:w-2/3 h-full rounded-tl-2xl rounded-bl-2xl">
-          <div className="flex mx-auto items-center mt-20">
-            <h1 className="text-black pl-20 text-4xl mb-6 md:text-2xl font-medium">
+      <div className="bg-gray-950 flex justify-center items-center md:justify-start md:flex-row-reverse w-full h-screen">
+        <div className="bg-white w-11/12 md:w-3/4 md:h-screen rounded-2xl md:rounded-tl-2xl md:rounded-bl-2xl md:rounded-tr-none md:rounded-br-none m-2 mr-0">
+          <div className="pt-10 px-6 md:pt-16 md:px-20">
+            <h1 className="text-2xl md:text-3xl text-black font-medium text-center md:text-left">
               Buat Akun Saya
             </h1>
           </div>
-          <div>
-            <form>
-              <h2 className="pr-2 mt-4 ml-20">Nama Pengguna</h2>
-              <input
-                type="text"
-                placeholder="masukan nama"
-                className="w-3/5 border-2 border-gray-300 rounded-2xl p-2 mt-2 ml-20"
-              ></input>
-              <h2 className="pr-2 mt-4 ml-20">Email</h2>
-              <input
-                type="email"
-                placeholder="masukan email"
-                className="w-3/5 border-2 border-gray-300 rounded-2xl p-2 mt-2 ml-20"
-              ></input>
-              <h2 className="pr-2 mt-4 ml-20">Password</h2>
-              <input
-                type="text"
-                placeholder="masukan password"
-                className="w-3/5 border-2 border-gray-300 rounded-2xl p-2 mt-2 ml-20"
-              ></input>
-              <h2 className="pr-2 mt-4 ml-20">Konfirmasi</h2>
-              <input
-                type="text"
-                placeholder="masukan konfirmasi password"
-                className="w-3/5 border-2 border-gray-300 rounded-2xl p-2 mt-2 ml-20 block"
-              ></input>
 
-              <input type="checkbox" className="ml-20 mt-4" />
-              <label className="ml-2">
-                Saya setuju dengan
-                <span className="font-semibold text-black">
-                  <a href="#">syarat dan ketentuan</a>
-                </span>
-              </label>
-              <br />
-              <button className="bg-black text-white w-3/5 rounded-2xl p-2 mt-10 ml-20 cursor-pointer">
-                Daftar
-              </button>
-              <p className="mt-4 ml-20">
-                Sudah punya akun?
-                <span className="font-semibold text-black">
-                  <a href="#"> Log in disini</a>
-                </span>
-              </p>
+          {/* Formulir pendaftaran */}
+          <div className="p-6 md:px-20">
+            <form className="mt-6 space-y-5">
+              {/* Grup Nama Pengguna */}
+              <div className="flex flex-col items-center md:items-start">
+                <label
+                  htmlFor="username"
+                  className="mb-1 self-stretch text-center md:text-left"
+                >
+                  Nama Pengguna
+                </label>
+                <input
+                  id="username"
+                  type="text"
+                  placeholder="Masukkan nama"
+                  className="border-slate-200 md:w-3/4 w-5/6 border-2 rounded-2xl p-2"
+                />
+              </div>
+
+              {/* Grup Email */}
+              <div className="flex flex-col items-center md:items-start">
+                <label
+                  htmlFor="email"
+                  className="mb-1 self-stretch text-center md:text-left"
+                >
+                  Email
+                </label>
+                <input
+                  id="email"
+                  type="email"
+                  autoComplete="email"
+                  placeholder="Masukkan email"
+                  className="border-slate-200 md:w-3/4 w-5/6 border-2 rounded-2xl p-2"
+                />
+              </div>
+
+              {/* Grup Password */}
+              <div className="flex flex-col items-center md:items-start">
+                <label
+                  htmlFor="password"
+                  className="mb-1 self-stretch text-center md:text-left"
+                >
+                  Password
+                </label>
+                <input
+                  id="password"
+                  type="password"
+                  placeholder="Masukkan password"
+                  className="border-slate-200 md:w-3/4 w-5/6 border-2 rounded-2xl p-2"
+                />
+              </div>
+
+              {/* Grup Konfirmasi Password */}
+              <div className="flex flex-col items-center md:items-start">
+                <label
+                  htmlFor="confirm-password"
+                  className="mb-1 self-stretch text-center md:text-left"
+                >
+                  Konfirmasi Password
+                </label>
+                <input
+                  id="confirm-password"
+                  type="password"
+                  placeholder="Masukkan konfirmasi password"
+                  className="border-slate-200 md:w-3/4 w-5/6 border-2 rounded-2xl p-2"
+                />
+              </div>
+
+              {/* Grup Checkbox */}
+              <div className="flex items-center justify-center md:justify-start pt-2">
+                <input id="terms" type="checkbox" className="mr-2" />
+                <label htmlFor="terms" className="text-sm">
+                  Saya setuju dengan{" "}
+                  <a
+                    href="#"
+                    className="font-semibold text-black hover:underline"
+                  >
+                    syarat dan ketentuan
+                  </a>
+                </label>
+              </div>
+
+              {/* Tombol Submit */}
+              <div className="pt-4 flex justify-center md:justify-start">
+                <button
+                  type="submit"
+                  className="bg-black text-white md:w-3/4 w-5/6 rounded-2xl p-2.5 font-semibold cursor-pointer hover:bg-gray-800 transition-colors"
+                >
+                  Daftar
+                </button>
+              </div>
             </form>
           </div>
         </div>
