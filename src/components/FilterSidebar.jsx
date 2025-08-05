@@ -181,8 +181,8 @@ const FilterSidebar = ({ categories = [], filters, onFilterChange }) => {
       </div>
 
       {/* Mobile View */}
-      <div className="md:hidden p-4 flex items-center justify-center  bg-gray-100 rounded-lg">
-        <div className=" items-center  mb-6 pb-4 border-b border-gray-200 ">
+      <div className="md:hidden pt-4 flex items-center justify-center  bg-gray-100 rounded-lg">
+        <div className=" items-center  mb-2 pb-2 border-b border-gray-200 ">
           <FilterIcon />
         </div>
       </div>
