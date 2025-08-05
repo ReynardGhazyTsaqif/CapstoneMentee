@@ -1,9 +1,10 @@
 import Homepage from "./pages/homepage";
+import Kategori from "./pages/Kategori";
 
 export default function App() {
   return (
     <div>
-      <Homepage />
+      <Kategori />
     </div>
   );
 }
