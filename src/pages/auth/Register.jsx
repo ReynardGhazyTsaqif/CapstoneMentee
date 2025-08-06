@@ -101,6 +101,12 @@ export default function Register() {
                 </button>
               </div>
             </form>
+            <p className="pr-10 text-sm  text-center md:text-start mt-4">
+              Sudah Punya Akun ?{" "}
+              <span className="font-semibold">
+                <a href="#">Login Disini</a>
+              </span>
+            </p>
           </div>
         </div>
       </div>
