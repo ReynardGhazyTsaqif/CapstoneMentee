@@ -1,44 +1,43 @@
-// Card.js
-// Card.js
-
-// Membuat komponen menerima props agar datanya bisa dinamis
 export default function Card({ imageUrl, name, description, price, rating }) {
   return (
     <>
-      <div className="bg-white shadow-md rounded-lg p-6 max-w-sm mx-auto">
-        {/* Konten utama dibuat flex agar gambar dan teks bisa sejajar */}
-        <div className="flex items-center gap-4">
-          {/* Gambar dengan ukuran yang konsisten */}
+      <div className="bg-white shadow-md rounded-lg overflow-hidden h-full flex flex-col">
+        {/* --- Bagian Gambar --- */}
+        <div className="w-full h-48 bg-gray-200">
           <img
-            src={imageUrl || "https://via.placeholder.com/150"}
+            src={
+              imageUrl || "https://placehold.co/400x300/e2e8f0/333?text=Image"
+            }
             alt={name || "Product Image"}
-            className="w-24 h-24 object-cover rounded-md flex-shrink-0" // DIUBAH
+            className="w-full h-full object-cover"
           />
-
-          {/* Wrapper untuk semua teks */}
-          <div className="flex-grow">
-            <div className="flex justify-between gap-2">
-              <div>
-                <h2 className="font-bold text-lg">{name || "Shoes Name"}</h2>
-                <p className="text-sm text-gray-600">
-                  {description || "Description"}
-                </p>
-              </div>
-              <div className="text-right">
-                <p className="font-semibold">{price || "Price"}</p>
-                <p className="text-sm text-yellow-500">
-                  {rating ? `⭐ ${rating}` : "⭐"}
-                </p>
-              </div>
-            </div>
-          </div>
         </div>
 
-        {/* Tombol */}
-        <div className="text-center mt-6">
-          <button className="border-black border-2 text-black px-6 py-1.5 rounded-2xl hover:bg-black hover:text-white transition-colors">
-            Quick View
-          </button>
+        {/* --- Bagian Konten --- */}
+
+        <div className="p-4 flex flex-col flex-grow">
+          <div className="flex-grow">
+            <div className="flex justify-between items-start gap-3">
+              <h2 className="font-bold text-lg mb-1">{name || "Shoes Name"}</h2>
+
+              <div className="text-sm text-yellow-500 flex items-center gap-1 flex-shrink-0">
+                <span>⭐</span>
+                <span>{rating || "N/A"}</span>
+              </div>
+            </div>
+            <p className="text-sm text-gray-600">
+              {description || "Description"}
+            </p>
+            <p className="font-bold text-xl mt-3">{price || "$0.00"}</p>
+          </div>
+
+          {/* --- Bagian Tombol --- */}
+
+          <div className="text-center mt-4">
+            <button className="border-black border-2 text-black px-6 py-2 rounded-lg hover:bg-black hover:text-white transition-colors w-full font-semibold">
+              Quick View
+            </button>
+          </div>
         </div>
       </div>
     </>
