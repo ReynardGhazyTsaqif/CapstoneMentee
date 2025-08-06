@@ -4,7 +4,8 @@ import React from "react";
 import { StrictMode } from "react";
 import "./index.css";
 import "./App.css";
-import { Routes, Route } from "react-router-dom";
+
+import { Routes, Route, Link } from "react-router-dom";
 
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
