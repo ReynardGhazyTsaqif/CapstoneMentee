@@ -1,9 +1,9 @@
-import Navbar from "../components/Navbar";
 import heroimage from "../assets/img/heroimage.jpg";
 import FilterSidebar from "../components/FilterSideBar";
 import SortingBar from "../components/SortingBar";
 import Card from "../components/CardShoes";
-import React, { useState } from "react";
+import { Link } from "react-router-dom";
+import { useState } from "react";
 
 export default function Kategori() {
   //test card
@@ -99,10 +99,9 @@ export default function Kategori() {
     <>
       <div className="bg-black w-full max-h-full ">
         <div className="bg-gray-100 w-full min-h-screen flex flex-col">
-          <Navbar />
           {/*herosection */}
           <div
-            className="relative w-full h-[40vh] bg-cover bg-center mx-auto"
+            className="relative w-full h-[50vh] bg-cover bg-center mx-auto"
             style={{ backgroundImage: `url(${heroimage})` }}
           >
             <div className="absolute inset-0 bg-black opacity-20"></div>
@@ -169,14 +168,15 @@ export default function Kategori() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                 {products.map((product) => (
-                  <Card
-                    key={product.id}
-                    imageUrl={product.imageUrl}
-                    name={product.name}
-                    description={product.description}
-                    rating={product.rating}
-                    price={product.price}
-                  />
+                  <Link key={product.id} to={`/produk/${product.id}`}>
+                    <Card
+                      imageUrl={product.imageUrl}
+                      name={product.name}
+                      description={product.description}
+                      rating={product.rating}
+                      price={product.price}
+                    />
+                  </Link>
                 ))}
               </div>
 

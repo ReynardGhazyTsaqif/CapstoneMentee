@@ -1,7 +1,7 @@
 import heroimage from "../assets/img/heroimage.jpg";
 import bannerimage from "../assets/img/bannerimage.jpg";
-import SearchField from "../components/SearchField";
-import MenuIcons from "../components/menuicons";
+
+import Navbar from "../components/Navbar";
 import Card from "../components/CardShoes";
 
 //test card
@@ -87,15 +87,7 @@ export default function Homepage() {
             <div className="absolute inset-0 bg-black opacity-50">
               <div className="relative z-10 flex flex-col justify-between h-full p-8 md:p-12">
                 {/* Teks Atas */}
-                <div className="flex">
-                  <div className="hidden md:block">
-                    <h1 className="text-white md:text-4xl md:font-bold">
-                      NAMABRAND
-                    </h1>
-                  </div>
-                  <SearchField />
-                  <MenuIcons className="hidden md:flex" />
-                </div>
+                <Navbar />
 
                 {/* Teks Bawah */}
                 <h1 className="text-white md:text-4xl md:font-bold">
@@ -133,6 +125,7 @@ export default function Homepage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 px-4">
               {products.map((product) => (
                 <Card
+                  key={product.id}
                   imageUrl={product.imageUrl}
                   name={product.name}
                   description={product.description}
