@@ -1,175 +1,194 @@
 import React, { useState } from "react";
-
 import { Link, useNavigate } from "react-router-dom";
-import api from "../../api/axios.jsx";
 import { Eye, EyeOff } from "lucide-react";
+import api from "../../api/axios.jsx"; // Menggunakan instance axios yang sudah dikonfigurasi
 
 export default function Login() {
-  // State untuk form, hanya email dan password
+  // STATE MANAGEMENT (dari Versi 2)
+  // Menggabungkan form input ke dalam satu state object untuk kemudahan pengelolaan
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
   const [rememberMe, setRememberMe] = useState(false);
 
-  // State untuk UI feedback
+  // State untuk UI feedback (dari Versi 2)
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
 
   const navigate = useNavigate();
 
-  // Fungsi untuk menangani perubahan pada input
+  // FUNGSI HANDLE CHANGE (dari Versi 2)
+  // Fungsi tunggal untuk menangani semua perubahan input form
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // Fungsi untuk menangani submit form login
+  // FUNGSI HANDLE LOGIN (Gabungan Terbaik dari Keduanya)
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
 
     try {
-      // Ganti dengan endpoint API login Anda
+      // Menggunakan endpoint dari Versi 2, lebih umum
       const response = await api.post("/auth/login", formData);
 
-      // Jika login berhasil, Anda mungkin akan menyimpan token, dll.
-      console.log("Login berhasil:", response.data);
+      // Mengambil data user dan token (jika ada) dari respons
+      const { token, user } = response.data;
 
-      // Arahkan ke halaman dashboard atau halaman utama setelah login
-      navigate("/dashboard");
+      // PRAKTIK TERBAIK: Simpan token di localStorage untuk sesi pengguna
+      // Backend harus mengirimkan token untuk autentikasi di request selanjutnya
+      if (token) {
+        localStorage.setItem("authToken", token);
+      }
+
+      // Simpan data user jika diperlukan di halaman lain
+      localStorage.setItem("user", JSON.stringify(user));
+
+      // LOGIKA ROLE-BASED NAVIGATION (dari Versi 1)
+      // Mengarahkan pengguna berdasarkan role yang diterima dari backend
+      if (user.role === "admin") {
+        navigate("/admin/dashboard"); // Arahkan admin ke dashboard khusus
+      } else {
+        navigate("/dashboard"); // Arahkan user biasa ke dashboard umum
+      }
     } catch (err) {
-      console.error("Full error response:", err.response);
+      // PENANGANAN ERROR (dari Versi 2)
+      // Memberikan pesan error yang jelas di UI
       const errorMessage =
         err.response?.data?.message ||
         "Email atau password salah. Silakan coba lagi.";
       setError(errorMessage);
     } finally {
+      // Selalu matikan loading state setelah proses selesai
       setLoading(false);
-
     }
   };
 
   return (
+    <div className="flex flex-col lg:flex-row w-full min-h-screen bg-gray-950">
+      {/* Bagian Kiri (Sisi Gelap) */}
+      <div className="hidden lg:block lg:w-1/4 xl:w-1/3 bg-gray-950"></div>
 
-    <>
-      <div className="bg-gray-950 flex justify-center items-center md:justify-start md:flex-row-reverse w-full min-h-screen">
-        <div className="bg-white w-11/12 md:w-3/4 md:h-screen rounded-2xl md:rounded-tl-2xl md:rounded-bl-2xl md:rounded-tr-none md:rounded-br-none  mr-0">
-          <div className="pt-10 px-6 md:pt-16 md:px-20">
-            <h1 className="text-2xl md:text-3xl text-black font-medium text-center md:text-left">
-              Login ke Akun Anda
-            </h1>
-          </div>
+      {/* Bagian Kanan (Formulir) - Menggunakan struktur layout dari Versi 2 */}
+      <div className="bg-white w-full lg:w-3/4 xl:w-2/3 min-h-screen lg:rounded-tl-2xl lg:rounded-bl-2xl">
+        <div className="flex flex-col justify-center items-start px-6 sm:px-12 lg:px-20 pt-12 lg:pt-20">
+          <h1 className="text-black text-2xl sm:text-3xl lg:text-4xl font-semibold mb-4">
+            Login ke Akun Anda
+          </h1>
+        </div>
 
-          {/* Formulir login */}
-          <div className="p-6 md:px-20">
-            <form onSubmit={handleLogin} className="mt-6 space-y-5">
-              {error && (
-                <div className="p-3 text-center bg-red-100 text-red-700 rounded-lg">
-                  {error}
-                </div>
-              )}
+        <div className="px-6 sm:px-12 lg:px-20 max-w-md lg:max-w-none mx-auto lg:mx-0">
+          <form onSubmit={handleLogin} className="space-y-5 mt-6">
+            {/* Tampilkan pesan error jika ada */}
+            {error && (
+              <div className="p-3 text-center bg-red-100 text-red-700 rounded-lg">
+                {error}
+              </div>
+            )}
 
-              {/* Grup Email */}
-              <div className="flex flex-col items-center md:items-start">
-                <label
-                  htmlFor="email"
-                  className="mb-1 self-stretch text-center md:text-left"
-                >
-                  Email
-                </label>
+            {/* Input Email */}
+            <div>
+              <label
+                htmlFor="email"
+                className="block text-sm sm:text-base font-medium text-gray-700 mb-2"
+              >
+                Email
+              </label>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                autoComplete="email"
+                placeholder="Masukkan email Anda"
+                value={formData.email}
+                onChange={handleChange}
+                className="w-full border-2 border-gray-300 rounded-xl p-3 focus:outline-none focus:border-gray-600 transition-colors"
+                required
+              />
+            </div>
+
+            {/* Input Password */}
+            <div>
+              <label
+                htmlFor="password"
+                className="block text-sm sm:text-base font-medium text-gray-700 mb-2"
+              >
+                Password
+              </label>
+              <div className="relative">
                 <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  placeholder="Masukkan email"
-                  value={formData.email}
+                  id="password"
+                  name="password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Masukkan password Anda"
+                  value={formData.password}
                   onChange={handleChange}
-                  className="border-slate-200 md:w-3/4 w-5/6 border-2 rounded-2xl p-2 focus:outline-none focus:border-gray-500"
+                  className="w-full border-2 border-gray-300 rounded-xl p-3 pr-12 focus:outline-none focus:border-gray-600 transition-colors"
                   required
                 />
-              </div>
-
-              {/* Grup Password */}
-              <div className="flex flex-col items-center md:items-start">
-                <label
-                  htmlFor="password"
-                  className="mb-1 self-stretch text-center md:text-left"
-                >
-                  Password
-                </label>
-                <div className="relative w-5/6 md:w-3/4">
-                  <input
-                    id="password"
-                    name="password"
-                    type={showPassword ? "text" : "password"}
-                    placeholder="Masukkan password"
-                    value={formData.password}
-                    onChange={handleChange}
-                    className="border-slate-200 w-full border-2 rounded-2xl p-2 pr-10 focus:outline-none focus:border-gray-500"
-                    required
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500"
-                  >
-                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                  </button>
-                </div>
-              </div>
-
-              {/* Checkbox "Ingat Saya" & Link "Lupa Password" */}
-              <div className="flex items-center justify-between md:w-3/4 w-5/6 mx-auto md:mx-0">
-                <div className="flex items-center">
-                  <input
-                    id="remember-me"
-                    type="checkbox"
-                    checked={rememberMe}
-                    onChange={(e) => setRememberMe(e.target.checked)}
-                    className="mr-2 h-4 w-4 rounded border-gray-300 text-black focus:ring-gray-700"
-                  />
-                  <label htmlFor="remember-me" className="text-sm">
-                    Ingat saya
-                  </label>
-                </div>
-                <Link
-                  to="/resetpassword"
-                  className="font-semibold text-sm text-black hover:underline"
-                >
-                  Lupa Password?
-                </Link>
-              </div>
-
-              {/* Tombol Submit */}
-              <div className="pt-4 flex justify-center md:justify-start">
                 <button
-                  type="submit"
-                  disabled={loading}
-                  className="bg-black text-white md:w-3/4 w-5/6 rounded-2xl p-2.5 font-semibold cursor-pointer hover:bg-gray-800 transition-colors disabled:bg-gray-400"
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-0 flex items-center pr-4 text-gray-500 hover:text-gray-800"
                 >
-                  {loading ? "Memproses..." : "Login"}
+                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
               </div>
-            </form>
+            </div>
 
-            <p className="pr-10 text-sm text-center md:text-start mt-4">
-              Tidak punya akun?{" "}
+            {/* Opsi "Ingat Saya" & "Lupa Password" */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <input
+                  id="remember-me"
+                  name="remember-me"
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  className="h-4 w-4 rounded border-gray-300 text-black focus:ring-gray-700"
+                />
+                <label
+                  htmlFor="remember-me"
+                  className="ml-2 block text-sm text-gray-900"
+                >
+                  Ingat saya
+                </label>
+              </div>
               <Link
-                to="/register"
-                className="font-semibold text-black hover:underline"
-
+                to="/forgotpassword" // Menggunakan path yang lebih umum
+                className="text-sm font-semibold text-black hover:underline"
               >
-                Daftar di sini
+                Lupa Password?
               </Link>
-            </p>
+            </div>
 
-          </div>
+            {/* Tombol Submit */}
+            <div className="pt-4">
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-black text-white rounded-xl p-3 font-semibold hover:bg-gray-800 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+              >
+                {loading ? "Memproses..." : "Login"}
+              </button>
+            </div>
+          </form>
+
+          {/* Link ke halaman Register */}
+          <p className="text-center text-sm text-gray-600 mt-6">
+            Tidak punya akun?{" "}
+            <Link
+              to="/register"
+              className="font-semibold text-black hover:underline"
+            >
+              Daftar di sini
+            </Link>
+          </p>
         </div>
       </div>
-    </>
+    </div>
   );
 }
-
