@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+
 import { Eye, EyeOff } from "lucide-react";
 import axios from "axios";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -44,10 +45,12 @@ export default function ResetPassword() {
     } catch (error) {
       const msg = error.response?.data?.message || "Gagal reset password";
       alert(msg);
+
     }
   };
 
   return (
+
     <div className="flex flex-col lg:flex-row w-full min-h-screen bg-gray-950">
       {/* Kiri (kosong, background gelap untuk layar besar) */}
       <div className="hidden lg:block lg:w-1/4 xl:w-1/3 bg-gray-950"></div>
@@ -125,5 +128,6 @@ export default function ResetPassword() {
         </div>
       </div>
     </div>
+
   );
 }

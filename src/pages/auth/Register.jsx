@@ -7,6 +7,7 @@ import { Eye, EyeOff } from "lucide-react";
 
 import { Link, useNavigate } from "react-router-dom";
 import api from "../../api/axios.jsx";
+import { Eye, EyeOff } from "lucide-react";
 
 export default function Register() {
   const [formData, setFormData] = useState({
@@ -19,6 +20,10 @@ export default function Register() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
+
+  //state untuk mengontrol visibilitas password
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const navigate = useNavigate();
 
@@ -101,26 +106,8 @@ export default function Register() {
                 />
               </div>
 
-              {/* Grup Email */}
-              <div className="flex flex-col items-center md:items-start">
-                <label
-                  htmlFor="email"
-                  className="mb-1 self-stretch text-center md:text-left"
-                >
-                  Email
-                </label>
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  placeholder="Masukkan email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  className="border-slate-200 md:w-3/4 w-5/6 border-2 rounded-2xl p-2"
-                  required
-                />
-              </div>
+            
+
 
 
             {/* Email */}
@@ -139,23 +126,36 @@ export default function Register() {
               />
             </div>
 
-            {/* Password */}
-            <div>
-              <label className="block text-sm sm:text-base font-medium text-gray-700 mb-2">
-                Password
-              </label>
-              <div className="relative">
-                <input
+              {/* Grup Password */}
+              <div className="flex flex-col items-center md:items-start">
+                <label
+                  htmlFor="password"
+                  className="mb-1 self-stretch text-center md:text-left"
+                >
+                  Password
+                </label>
+                <div className="relative w-full md:w-3/4">
+                  {" "}
+                  <input
+                    id="password"
+                    name="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Masukkan password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    className="border-slate-200 w-full border-2 rounded-2xl p-2 pr-10"
+                    required
+                  />
+                  <button
+                    type="button" // Penting agar tidak submit form
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500"
+                  >
+                    {/* 7. Tampilkan ikon yang sesuai */}
+                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  </button>
+                </div>
 
-                  id="password"
-                  name="password"
-                  type="password"
-                  placeholder="Masukkan password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  className="border-slate-200 md:w-3/4 w-5/6 border-2 rounded-2xl p-2"
-                  required
-                />
               </div>
 
               {/* Grup Konfirmasi Password */}
@@ -166,16 +166,30 @@ export default function Register() {
                 >
                   Konfirmasi Password
                 </label>
-                <input
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  type="password"
-                  placeholder="Masukkan konfirmasi password"
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                  className="border-slate-200 md:w-3/4 w-5/6 border-2 rounded-2xl p-2"
-                  required
-                />
+                <div className="relative w-full md:w-3/4">
+                  {" "}
+                  <input
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    type={showConfirmPassword ? "text" : "password"}
+                    placeholder="Masukkan konfirmasi password"
+                    value={formData.confirmPassword}
+                    onChange={handleChange}
+                    className="border-slate-200 w-full border-2 rounded-2xl p-2 pr-10"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500"
+                  >
+                    {showConfirmPassword ? (
+                      <EyeOff size={20} />
+                    ) : (
+                      <Eye size={20} />
+                    )}
+                  </button>
+                </div>
               </div>
 
               {/* Grup Checkbox */}
@@ -205,73 +219,19 @@ export default function Register() {
 
                 </button>
               </div>
-            </div>
 
-            {/* Confirm Password */}
-            <div>
-              <label className="block text-sm sm:text-base font-medium text-gray-700 mb-2">
-                Konfirmasi Password
-              </label>
-              <div className="relative">
-                <input
-                  type={showConfirmPassword ? "text" : "password"}
-                  name="confirmPassword"
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                  placeholder="Masukkan konfirmasi password"
-                  className="w-full border-2 border-gray-300 rounded-2xl p-3 pr-12 focus:outline-none focus:border-gray-500 transition-colors"
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-gray-700 transition-colors"
-                >
-                  {showConfirmPassword ? (
-                    <EyeOff size={20} />
-                  ) : (
-                    <Eye size={20} />
-                  )}
-                </button>
-              </div>
-            </div>
+            </form>
+            <p className="pr-10 text-sm  text-center md:text-start mt-4">
+              Sudah Punya Akun ?{" "}
+              <span className="font-semibold">
+                <Link to="/login" className="text-black hover:underline">
+                  Login Di Sini
+                </Link>
+              </span>
 
-            {/* Terms and Conditions */}
-            <div className="flex items-start">
-              <input
-                type="checkbox"
-                id="terms"
-                className="w-4 h-4 mr-3 text-blue-600 border-gray-300 rounded focus:ring-blue-500 mt-1"
-                required
-              />
-              <label htmlFor="terms" className="text-sm text-gray-700">
-                Saya setuju dengan{" "}
-                <span className="font-semibold text-black">
-                  <a href="#">syarat dan ketentuan</a>
-                </span>
-              </label>
-            </div>
-
-            {/* Submit Button */}
-            <button
-              type="submit"
-              className="w-full bg-black text-white rounded-2xl p-3 mt-6 hover:bg-gray-800 transition-colors font-medium"
-            >
-              Daftar
-            </button>
-
-            {/* Login link */}
-            <p className="text-center text-sm text-gray-600 mt-6">
-              Sudah punya akun?{" "}
-              <Link
-                to="/login"
-                className="font-semibold text-black hover:text-gray-700 transition-colors"
-              >
-                Log in di sini
-              </Link>
             </p>
-          </form>
+          </div>
         </div>
-      </div>
+      
     );
 }
