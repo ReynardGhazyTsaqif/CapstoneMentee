@@ -1,78 +1,66 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
-import api from "../../api/axios.jsx"; // Menggunakan instance axios yang sudah dikonfigurasi
+import api from "../../api/axios.jsx";
+import { jwtDecode } from "jwt-decode";
 
 export default function Login() {
-  // STATE MANAGEMENT (dari Versi 2)
-  // Menggabungkan form input ke dalam satu state object untuk kemudahan pengelolaan
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
   const [rememberMe, setRememberMe] = useState(false);
-
-  // State untuk UI feedback (dari Versi 2)
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
 
   const navigate = useNavigate();
 
-  // FUNGSI HANDLE CHANGE (dari Versi 2)
-  // Fungsi tunggal untuk menangani semua perubahan input form
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // FUNGSI HANDLE LOGIN (Gabungan Terbaik dari Keduanya)
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
 
     try {
-      // Menggunakan endpoint dari Versi 2, lebih umum
       const response = await api.post("/auth/login", formData);
 
-      // Mengambil data user dan token (jika ada) dari respons
-      const { token, user } = response.data;
+      // Backend hanya perlu mengirimkan token.
+      const { token } = response.data;
 
-      // PRAKTIK TERBAIK: Simpan token di localStorage untuk sesi pengguna
-      // Backend harus mengirimkan token untuk autentikasi di request selanjutnya
-      if (token) {
-        localStorage.setItem("authToken", token);
-      }
+      // 1. Simpan token di localStorage. Ini adalah satu-satunya hal yang kita simpan.
+      localStorage.setItem("authToken", token);
 
-      // Simpan data user jika diperlukan di halaman lain
-      localStorage.setItem("user", JSON.stringify(user));
+      // 2. Decode token untuk mendapatkan payload (data pengguna).
+      const decodedUser = jwtDecode(token);
 
-      // LOGIKA ROLE-BASED NAVIGATION (dari Versi 1)
-      // Mengarahkan pengguna berdasarkan role yang diterima dari backend
-      if (user.role === "admin") {
-        navigate("/admin/dashboard"); // Arahkan admin ke dashboard khusus
+      // Payload dari token sekarang berisi semua info user, termasuk role.
+      // Contoh payload: { id: '123', email: '...', role: 'admin', iat: ..., exp: ... }
+      console.log("Decoded User:", decodedUser);
+
+      // 3. Arahkan berdasarkan role dari hasil decode.
+      if (decodedUser.role === "admin") {
+        navigate("/admin/productform");
       } else {
-        navigate("/dashboard"); // Arahkan user biasa ke dashboard umum
+        navigate("/user/dashboard");
       }
     } catch (err) {
-      // PENANGANAN ERROR (dari Versi 2)
-      // Memberikan pesan error yang jelas di UI
       const errorMessage =
         err.response?.data?.message ||
         "Email atau password salah. Silakan coba lagi.";
       setError(errorMessage);
     } finally {
-      // Selalu matikan loading state setelah proses selesai
       setLoading(false);
     }
   };
 
   return (
     <div className="flex flex-col lg:flex-row w-full min-h-screen bg-gray-950">
-      {/* Bagian Kiri (Sisi Gelap) */}
       <div className="hidden lg:block lg:w-1/4 xl:w-1/3 bg-gray-950"></div>
 
-      {/* Bagian Kanan (Formulir) - Menggunakan struktur layout dari Versi 2 */}
       <div className="bg-white w-full lg:w-3/4 xl:w-2/3 min-h-screen lg:rounded-tl-2xl lg:rounded-bl-2xl">
         <div className="flex flex-col justify-center items-start px-6 sm:px-12 lg:px-20 pt-12 lg:pt-20">
           <h1 className="text-black text-2xl sm:text-3xl lg:text-4xl font-semibold mb-4">
@@ -82,7 +70,7 @@ export default function Login() {
 
         <div className="px-6 sm:px-12 lg:px-20 max-w-md lg:max-w-none mx-auto lg:mx-0">
           <form onSubmit={handleLogin} className="space-y-5 mt-6">
-            {/* Tampilkan pesan error jika ada */}
+            {/* menampilkan pesan error jika ada */}
             {error && (
               <div className="p-3 text-center bg-red-100 text-red-700 rounded-lg">
                 {error}
