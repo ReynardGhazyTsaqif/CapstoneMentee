@@ -4,18 +4,16 @@ import { Eye, EyeOff } from "lucide-react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
-
 function ForgotPassword() {
   const [email, setEmail] = useState("");
   const navigate = useNavigate();
-
 
   const handleForgotPassword = async (e) => {
     e.preventDefault();
 
     try {
       const response = await axios.post(
-        `${import.meta.env.VITE_API_URL}/forgot-password`, // sesuaikan endpoint di backend kamu
+        `${import.meta.env.VITE_API_URL}/forgotpassword`,
         { email }
       );
 
