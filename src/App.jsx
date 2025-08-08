@@ -4,14 +4,7 @@ import React from "react";
 import { StrictMode } from "react";
 import "./index.css";
 import "./App.css";
-<<<<<<< HEAD
 
-=======
-import Register from "./pages/auth/Register";
-import ForgotPassword from "./pages/auth/ForgotPassword";
-import ResetPassword from "./pages/auth/ResetPassword";
-import Login from "./pages/auth/Login";
->>>>>>> 9b996bf (menambahkan login page dan reset Password)
 import { Routes, Route, Link } from "react-router-dom";
 
 import Login from "./pages/auth/Login";
@@ -25,8 +18,6 @@ import ConfirmCode from "./pages/auth/ConfirmCode";
 
 function App() {
   return (
-
-
     <Routes>
       <Route path="/" element={<Login />} />
       <Route path="/login" element={<Login />} />
@@ -39,9 +30,7 @@ function App() {
       <Route path="/admin/productform" element={<ProductForm />} />
       <Route path="/admin/productlist" element={<ProductList />} />
       <Route path="*" element={<div>404 Not Found</div>} />
-      </Routes>
-    
-
+    </Routes>
   );
 }
 
