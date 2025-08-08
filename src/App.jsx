@@ -18,6 +18,7 @@ import ConfirmCode from "./pages/auth/ConfirmCode";
 
 function App() {
   return (
+
     <Routes>
       <Route path="/" element={<Login />} />
       <Route path="/login" element={<Login />} />
@@ -30,6 +31,7 @@ function App() {
       <Route path="/admin/productform" element={<ProductForm />} />
       <Route path="/admin/productlist" element={<ProductList />} />
     </Routes>
+
   );
 }
 
