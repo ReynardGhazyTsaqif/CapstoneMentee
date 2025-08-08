@@ -1,13 +1,33 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
+
 
 function ForgotPassword() {
   const [email, setEmail] = useState("");
+  const navigate = useNavigate();
 
-  const handleLogin = (e) => {
+
+  const handleForgotPassword = async (e) => {
     e.preventDefault();
-    console.log({ email });
+
+    try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_URL}/forgot-password`, // sesuaikan endpoint di backend kamu
+        { email }
+      );
+
+      alert(
+        response.data.message || "Kode verifikasi telah dikirim ke email Anda."
+      );
+      navigate("/confirmcode", { state: { email } });
+    } catch (error) {
+      const msg =
+        error.response?.data?.message || "Gagal mengirim email reset password";
+      alert(msg);
+    }
   };
 
   return (
@@ -28,7 +48,7 @@ function ForgotPassword() {
         </div>
 
         <div className="px-6 sm:px-12 lg:px-20 max-w-md lg:max-w-none mx-auto lg:mx-0">
-          <form onSubmit={handleLogin} className="space-y-4">
+          <form onSubmit={handleForgotPassword} className="space-y-4">
             {/* Email */}
             <div>
               <label className="block text-sm sm:text-base font-medium text-gray-700 mb-2">

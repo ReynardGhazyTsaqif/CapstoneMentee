@@ -1,15 +1,50 @@
 import React, { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
+import axios from "axios";
+import { useLocation, useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 
 export default function ResetPassword() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const email = location.state?.email;
 
-  const handleSubmit = (e) => {
+  useEffect(() => {
+  if (!email) {
+    alert("Email tidak tersedia. Silakan ulangi proses reset.");
+    navigate("/forgotpassword");
+  }
+}, [email, navigate]);
+
+  
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Logika reset password di sini
+
+    if (newPassword !== confirmPassword) {
+      alert("Password dan konfirmasi password tidak sama");
+      return;
+    }
+
+    try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_URL}/reset-password`,
+        {
+          email,
+          newPassword,
+        }
+      );
+
+      alert(response.data.message || "Password berhasil diubah");
+      navigate("/login"); // redirect ke login
+    } catch (error) {
+      const msg = error.response?.data?.message || "Gagal reset password";
+      alert(msg);
+    }
   };
 
   return (
@@ -70,7 +105,11 @@ export default function ResetPassword() {
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   className="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-gray-700 transition-colors"
                 >
-                  {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  {showConfirmPassword ? (
+                    <EyeOff size={20} />
+                  ) : (
+                    <Eye size={20} />
+                  )}
                 </button>
               </div>
             </div>
