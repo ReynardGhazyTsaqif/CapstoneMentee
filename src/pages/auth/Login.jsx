@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+
 import { Link } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
 import axios from "axios";
@@ -11,6 +13,8 @@ function Login() {
 
   const togglePassword = () => setShowPassword((prev) => !prev);
 
+  const navigate = useNavigate();
+
   const handleLogin = async (e) => {
     e.preventDefault();
 
@@ -18,12 +22,22 @@ function Login() {
       const response = await axios.post(
         `${import.meta.env.VITE_API_URL}/login`,
         { email, password },
-        { withCredentials: true } // kalau backend pakai cookie/session
+        { withCredentials: true }
       );
 
-      alert(response.data.message); // atau tampilkan di UI
-      // Misal: simpan data user ke localStorage jika perlu
-      // localStorage.setItem("user", JSON.stringify(response.data.user));
+      const { message, user } = response.data;
+
+      alert(message);
+
+      // Simpan user jika mau (opsional)
+      localStorage.setItem("user", JSON.stringify(user));
+
+      // Redirect berdasarkan role
+      if (user.role === "admin" || user.email === "admin@example.com") {
+        navigate("/admin/productform");
+      } else {
+        navigate("/user/dashboard");
+      }
     } catch (error) {
       const msg =
         error.response?.data?.message || "Terjadi kesalahan saat login";
