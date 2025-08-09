@@ -52,7 +52,7 @@ export default function Register() {
     // Div terluar ini sudah benar
     <div className="bg-gray-950 flex justify-center items-center md:justify-start md:flex-row-reverse w-full min-h-screen">
       {/* PERBAIKAN 1: Div pembungkus form dikembalikan ke versi yang benar */}
-      <div className="bg-white w-11/12 md:w-3/4 md:h-screen rounded-2xl md:rounded-tl-2xl md:rounded-bl-2xl md:rounded-tr-none md:rounded-br-none m-2 mr-0">
+      <div className="bg-white w-11/12 md:w-3/4 md:h-screen rounded-2xl md:rounded-tl-2xl md:rounded-bl-2xl md:rounded-tr-none md:rounded-br-none  mr-0">
         <div className="pt-10 px-6 md:pt-16 md:px-20">
           <h1 className="text-2xl md:text-3xl text-black font-medium text-center md:text-left">
             Buat Akun Saya
