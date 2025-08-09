@@ -1,43 +1,48 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import api from "../../api/axios.jsx";
 
-function ConfirmCode() {
+export default function ConfirmCode() {
   const [code, setCode] = useState("");
   const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
   const navigate = useNavigate();
   const location = useLocation();
 
   useEffect(() => {
-    // Ambil email dari halaman sebelumnya (misal: ForgotPassword)
-    if (location.state?.email) {
-      setEmail(location.state.email);
+    const userEmail = location.state?.email;
+    if (userEmail) {
+      setEmail(userEmail);
     } else {
-      // Kalau user masuk langsung ke halaman ini tanpa email, redirect balik
-      navigate("/forgotpassword");
+      navigate("/resetpassword");
     }
   }, [location, navigate]);
 
   const handleVerifyCode = async (e) => {
     e.preventDefault();
+    setLoading(true);
+    setError(null);
 
     try {
-      // Kirim ke backend: verifikasi email + kode
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/verify-code`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, code }),
-      });
+      // PERBAIKAN 1: Panggil endpoint yang benar & simpan hasilnya ke variabel 'response'
+      const response = await api.post("/auth/reset-password", { email, code });
 
-      const data = await response.json();
+      // PERBAIKAN 2: Ambil token dari 'response' yang sekarang sudah ada
+      // (Asumsikan backend mengembalikan token di dalam properti 'token')
+      const resetToken = response.data.token;
 
-      if (!response.ok) throw new Error(data.message);
-
-      // Redirect ke halaman reset password, bawa email sebagai parameter
-      navigate("/resetpassword", { state: { email } });
-    } catch (error) {
-      alert(error.message || "Kode verifikasi salah");
+      // PERBAIKAN 3: Bawa email DAN token ke halaman reset password
+      navigate("/reset-password", { state: { email, token: resetToken } });
+    } catch (err) {
+      console.error("Full error response:", err.response);
+      const errorMessage =
+        err.response?.data?.message ||
+        "Kode verifikasi salah atau telah kedaluwarsa.";
+      setError(errorMessage);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -53,12 +58,19 @@ function ConfirmCode() {
             Verifikasi Kode
           </h1>
           <p className="text-black text-sm sm:text-base lg:text-lg mb-5 pb-5 text-justify">
-            Masukkan kode verifikasi yang telah kami kirimkan ke email <strong>{email}</strong>
+            Masukkan kode verifikasi yang telah kami kirimkan ke email{" "}
+            <strong>{email}</strong>
           </p>
         </div>
 
         <div className="px-6 sm:px-12 lg:px-20 max-w-md lg:max-w-none mx-auto lg:mx-0">
           <form onSubmit={handleVerifyCode} className="space-y-4">
+            {error && (
+              <div className="p-3 text-center bg-red-100 text-red-700 rounded-lg">
+                {error}
+              </div>
+            )}
+
             {/* Kode Verifikasi */}
             <div>
               <label className="block text-sm sm:text-base font-medium text-gray-700 mb-2">
@@ -76,9 +88,10 @@ function ConfirmCode() {
             {/* Tombol Kirim */}
             <button
               type="submit"
-              className="w-full bg-black text-white rounded-xl sm:rounded-2xl p-3 mt-6 hover:bg-gray-800 transition-colors font-medium"
+              disabled={loading}
+              className="w-full bg-black text-white rounded-xl sm:rounded-2xl p-3 mt-6 hover:bg-gray-800 transition-colors font-medium disabled:bg-gray-500 disabled:cursor-not-allowed"
             >
-              Verifikasi Kode
+              {loading ? "Memverifikasi..." : "Verifikasi Kode"}
             </button>
           </form>
         </div>
@@ -86,5 +99,3 @@ function ConfirmCode() {
     </div>
   );
 }
-
-export default ConfirmCode;

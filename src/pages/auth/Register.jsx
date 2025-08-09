@@ -49,9 +49,7 @@ export default function Register() {
   };
 
   return (
-    // Div terluar ini sudah benar
     <div className="bg-gray-950 flex justify-center items-center md:justify-start md:flex-row-reverse w-full min-h-screen">
-      {/* PERBAIKAN 1: Div pembungkus form dikembalikan ke versi yang benar */}
       <div className="bg-white w-11/12 md:w-3/4 md:h-screen rounded-2xl md:rounded-tl-2xl md:rounded-bl-2xl md:rounded-tr-none md:rounded-br-none  mr-0">
         <div className="pt-10 px-6 md:pt-16 md:px-20">
           <h1 className="text-2xl md:text-3xl text-black font-medium text-center md:text-left">
@@ -72,7 +70,6 @@ export default function Register() {
               </div>
             )}
 
-            {/* Grup input diseragamkan gayanya */}
             <div className="flex flex-col items-center md:items-start">
               <label
                 htmlFor="fullName"
@@ -184,7 +181,6 @@ export default function Register() {
               </label>
             </div>
 
-            {/* PERBAIKAN 2: Tombol Submit dikembalikan ke versi yang benar */}
             <div className="pt-4 flex justify-center md:justify-start">
               <button
                 type="submit"
@@ -194,17 +190,16 @@ export default function Register() {
                 {loading ? "Memproses..." : "Daftar"}
               </button>
             </div>
+            <p className="pr-10 text-sm text-center md:text-start mt-4">
+              Sudah Punya Akun ?{" "}
+              <Link
+                to="/login"
+                className="font-semibold text-black hover:underline"
+              >
+                Login Disini
+              </Link>
+            </p>
           </form>
-
-          <p className="pr-10 text-sm text-center md:text-start mt-4">
-            Sudah Punya Akun ?{" "}
-            <Link
-              to="/login"
-              className="font-semibold text-black hover:underline"
-            >
-              Login Disini
-            </Link>
-          </p>
         </div>
       </div>
     </div>

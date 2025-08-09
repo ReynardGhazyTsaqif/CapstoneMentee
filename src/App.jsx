@@ -1,5 +1,4 @@
 // src/App.jsx
-
 import React from "react";
 import { StrictMode } from "react";
 import "./index.css";

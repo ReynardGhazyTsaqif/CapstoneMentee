@@ -1,61 +1,65 @@
-import React, { useState } from "react";
-
-import { Eye, EyeOff } from "lucide-react";
-import axios from "axios";
+import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { useEffect } from "react";
+import { Eye, EyeOff } from "lucide-react";
+import api from "../../api/axios.jsx"; // 1. Gunakan instance axios terpusat
 
 export default function ResetPassword() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  // 2. Tambahkan state untuk loading, error, dan success
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(false);
+
   const navigate = useNavigate();
   const location = useLocation();
   const email = location.state?.email;
+  const token = location.state?.token;
 
   useEffect(() => {
-  if (!email) {
-    alert("Email tidak tersedia. Silakan ulangi proses reset.");
-    navigate("/forgotpassword");
-  }
-}, [email, navigate]);
-
-  
+    if (!email || !token) {
+      navigate("/forgotpassword");
+    }
+  }, [email, token, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
+    setError(null);
+    setSuccess(false);
 
     if (newPassword !== confirmPassword) {
-      alert("Password dan konfirmasi password tidak sama");
+      setError("Password dan konfirmasi password tidak sama");
+      setLoading(false);
       return;
     }
 
     try {
-      const response = await axios.post(
-        `${import.meta.env.VITE_API_URL}/reset-password`,
-        {
-          email,
-          newPassword,
-        }
-      );
+      await api.put("/auth/reset-password", {
+        email,
+        newPassword,
+        token,
+      });
 
-      alert(response.data.message || "Password berhasil diubah");
-      navigate("/login"); // redirect ke login
-    } catch (error) {
-      const msg = error.response?.data?.message || "Gagal reset password";
-      alert(msg);
-
+      setSuccess(true);
+      setTimeout(() => navigate("/login"), 3000);
+    } catch (err) {
+      console.error("Full error response:", err.response);
+      const errorMessage =
+        err.response?.data?.message ||
+        "Gagal mereset password. Silakan coba lagi.";
+      setError(errorMessage);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-
     <div className="flex flex-col lg:flex-row w-full min-h-screen bg-gray-950">
-      {/* Kiri (kosong, background gelap untuk layar besar) */}
       <div className="hidden lg:block lg:w-1/4 xl:w-1/3 bg-gray-950"></div>
-
-      {/* Kanan (form reset password) */}
       <div className="bg-white w-full lg:w-3/4 xl:w-2/3 min-h-screen lg:rounded-tl-2xl lg:rounded-bl-2xl">
         <div className="flex justify-center lg:justify-start items-center pt-8 lg:pt-20">
           <h2 className="text-black text-2xl sm:text-3xl lg:text-4xl xl:text-4xl mb-6 font-medium lg:pl-20">
@@ -65,6 +69,18 @@ export default function ResetPassword() {
 
         <div className="px-6 sm:px-12 lg:px-20 max-w-md lg:max-w-none mx-auto lg:mx-0">
           <form onSubmit={handleSubmit} className="space-y-4">
+            {/* 4. pesan error atau sukses */}
+            {error && (
+              <div className="p-3 text-center bg-red-100 text-red-700 rounded-lg">
+                {error}
+              </div>
+            )}
+            {success && (
+              <div className="p-3 text-center bg-green-100 text-green-700 rounded-lg">
+                Password berhasil diubah! Anda akan diarahkan ke halaman login.
+              </div>
+            )}
+
             {/* Password Baru */}
             <div>
               <label className="block text-sm sm:text-base font-medium text-gray-700 mb-2">
@@ -117,17 +133,17 @@ export default function ResetPassword() {
               </div>
             </div>
 
-            {/* Tombol Simpan */}
+            {/* tombol merespons status loading */}
             <button
               type="submit"
-              className="w-full bg-black text-white rounded-2xl p-3 mt-6 hover:bg-gray-800 transition-colors font-medium"
+              disabled={loading}
+              className="w-full bg-black text-white rounded-2xl p-3 mt-6 hover:bg-gray-800 transition-colors font-medium disabled:bg-gray-500 disabled:cursor-not-allowed"
             >
-              Simpan Password
+              {loading ? "Menyimpan..." : "Simpan Password"}
             </button>
           </form>
         </div>
       </div>
     </div>
-
   );
 }

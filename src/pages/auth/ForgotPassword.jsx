@@ -32,26 +32,22 @@ export default function ForgotPassword() {
     setSuccess(null);
 
     try {
-      const response = await api.post("/forgotpassword", { email });
+      const response = await api.post("/auth/forgot-password", { email });
 
-      // Menampilkan pesan sukses di UI
       setSuccess(
         response.data.message ||
           "Tautan reset password telah dikirim ke email Anda."
       );
 
-      // Memberi jeda sejenak agar pengguna bisa membaca pesan sukses sebelum navigasi
       setTimeout(() => {
         navigate("/confirmcode", { state: { email } });
-      }, 2000); // Tunggu 2 detik
+      }, 2000);
     } catch (err) {
-      // Menampilkan pesan error di UI
       const errorMessage =
         err.response?.data?.message ||
         "Gagal mengirim email. Periksa kembali alamat email Anda.";
       setError(errorMessage);
     } finally {
-      // Selalu matikan loading state setelah proses selesai
       setLoading(false);
     }
   };
