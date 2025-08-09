@@ -2,6 +2,7 @@ import heroimage from "../assets/img/heroimage.jpg";
 import FilterSidebar from "../components/FilterSideBar";
 import SortingBar from "../components/SortingBar";
 import Card from "../components/CardShoes";
+import DynamicBreadcrumb from "../components/DynamicBreadcrumb";
 import { Link } from "react-router-dom";
 import { useState } from "react";
 
@@ -129,6 +130,10 @@ export default function Kategori() {
 
             {/*hasil Pencarian*/}
             <div className="flex flex-col w-full py-4 md:px-10 md:py-6">
+              <div className="hidden md:block my-2">
+                <DynamicBreadcrumb />
+              </div>
+
               {/*header pencarian*/}
               <div className="flex items-center gap-4 mb-6">
                 <svg
@@ -168,7 +173,7 @@ export default function Kategori() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                 {products.map((product) => (
-                  <Link key={product.id} to={`/produk/${product.id}`}>
+                  <Link key={product.id} to={`/kategori/${product.id}`}>
                     <Card
                       imageUrl={product.imageUrl}
                       name={product.name}
@@ -191,14 +196,6 @@ export default function Kategori() {
             </button>
           </div>
           {/* End of content-section */}
-          {/* Footer Section */}
-          <div className="bg-gray-800 text-white py-6 mt-10 text-center">
-            <p className="text-sm">
-              &copy; {new Date().getFullYear()} Company Name. All rights
-              reserved.
-            </p>
-          </div>
-          {/* End of Footer Section */}
         </div>
       </div>
     </>
