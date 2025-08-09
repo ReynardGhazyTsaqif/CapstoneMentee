@@ -1,10 +1,11 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
+import axios from "axios";
 
 export default function Register() {
   const [formData, setFormData] = useState({
-    username: "",
+    fullName: "",
     email: "",
     password: "",
     confirmPassword: "",
@@ -12,14 +13,45 @@ export default function Register() {
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleRegister = (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
-    // Tambahkan logika register
+
+    if (formData.password !== formData.confirmPassword) {
+      alert("Password dan konfirmasi password tidak cocok.");
+      return;
+    }
+
+    console.log("Data yang dikirim:", {
+      fullName: formData.fullName,
+      email: formData.email,
+      password: formData.password,
+      confirmPassword: formData.confirmPassword,
+    });
+
+    try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_URL}/auth/register`,
+        {
+          fullName: formData.fullName,
+          email: formData.email,
+          password: formData.password,
+          confirmPassword: formData.confirmPassword,
+        }
+      );
+
+      alert(response.data.message || "Registrasi berhasil!");
+      navigate("/login");
+    } catch (error) {
+      const msg =
+        error.response?.data?.message || "Registrasi gagal. Silakan coba lagi.";
+      alert(msg);
+    }
   };
 
   return (
@@ -37,15 +69,15 @@ export default function Register() {
 
         <div className="px-6 sm:px-12 lg:px-20 max-w-md lg:max-w-none mx-auto lg:mx-0">
           <form onSubmit={handleRegister} className="space-y-4">
-            {/* Username */}
+            {/* fullName */}
             <div>
               <label className="block text-sm sm:text-base font-medium text-gray-700 mb-2">
                 Nama Pengguna
               </label>
               <input
                 type="text"
-                name="username"
-                value={formData.username}
+                name="fullName"
+                value={formData.fullName}
                 onChange={handleChange}
                 placeholder="Masukkan nama"
                 className="w-full border-2 border-gray-300 rounded-2xl p-3 focus:outline-none focus:border-gray-500 transition-colors"
@@ -114,7 +146,11 @@ export default function Register() {
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   className="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-gray-700 transition-colors"
                 >
-                  {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  {showConfirmPassword ? (
+                    <EyeOff size={20} />
+                  ) : (
+                    <Eye size={20} />
+                  )}
                 </button>
               </div>
             </div>
