@@ -2,6 +2,7 @@ import React, { useState } from "react";
 
 export default function Card({ imageUrl, name, description, price, rating }) {
   // State untuk melacak apakah item ada di wishlist atau tidak
+
   const [isWishlisted, setIsWishlisted] = useState(false);
 
   const handleWishlistToggle = (e) => {

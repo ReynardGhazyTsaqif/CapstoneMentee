@@ -1,8 +1,8 @@
 import axios from "axios";
 
 const api = axios.create({
-  // URL dasar dari API Anda
-  baseURL: "https://cec458ecaa22.ngrok-free.app/api",
+  // baseURL akan mengambil dari file .env dan menambahkan /api
+  baseURL: `${import.meta.env.VITE_API_BASE_URL}/api`,
 
   // Header untuk melewati halaman peringatan ngrok
   headers: {

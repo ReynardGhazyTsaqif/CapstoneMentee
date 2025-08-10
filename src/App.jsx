@@ -1,4 +1,4 @@
-import Homepage from "./pages/homepage";
+import Homepage from "./pages/Homepage";
 import Kategori from "./pages/Kategori";
 import DetailProduk from "./pages/DetailProduk";
 import Layout from "./components/Layout";

@@ -1,201 +1,154 @@
+import React, { useState, useEffect } from "react";
 import heroimage from "../assets/img/heroimage.jpg";
 import FilterSidebar from "../components/FilterSideBar";
 import SortingBar from "../components/SortingBar";
 import Card from "../components/CardShoes";
 import DynamicBreadcrumb from "../components/DynamicBreadcrumb";
 import { Link } from "react-router-dom";
-import { useState } from "react";
+import api from "../api/axios";
 
 export default function Kategori() {
-  //test card
-  const products = [
-    {
-      id: 1,
-      name: "Nike Air Max",
-      description: "Running Sneaker",
-      price: "$120",
-      rating: "4.9",
-      imageUrl: "https://images.unsplash.com/photo-1542291026-7eec264c27ff",
-    },
-    {
-      id: 2,
-      name: "Adidas Ultraboost",
-      description: "Comfort & Style",
-      price: "$180",
-      rating: "4.8",
-      imageUrl: "https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a",
-    },
-    {
-      id: 3,
-      name: "Puma Classic",
-      description: "Suede Finish",
-      price: "$65",
-      rating: "4.7",
-      imageUrl: "https://images.unsplash.com/photo-1600185365926-3a2ce3cdb9eb",
-    },
-    {
-      id: 4,
-      name: "New Balance 574",
-      description: "Vintage Look",
-      price: "$85",
-      rating: "4.8",
-      imageUrl: "https://images.unsplash.com/photo-1579338559194-a162d19bf842",
-    },
-    {
-      id: 5,
-      name: "Nike Air Max",
-      description: "Running Sneaker",
-      price: "$120",
-      rating: "4.9",
-      imageUrl: "https://images.unsplash.com/photo-1542291026-7eec264c27ff",
-    },
-    {
-      id: 6,
-      name: "Adidas Ultraboost",
-      description: "Comfort & Style",
-      price: "$180",
-      rating: "4.8",
-      imageUrl: "https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a",
-    },
-    {
-      id: 7,
-      name: "Puma Classic",
-      description: "Suede Finish",
-      price: "$65",
-      rating: "4.7",
-      imageUrl: "https://images.unsplash.com/photo-1600185365926-3a2ce3cdb9eb",
-    },
-    {
-      id: 8,
-      name: "New Balance 574",
-      description: "Vintage Look",
-      price: "$85",
-      rating: "4.8",
-      imageUrl: "https://images.unsplash.com/photo-1579338559194-a162d19bf842",
-    },
-  ];
-  //End test card
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Daftar kategori bisa didapat dari API atau didefinisikan secara statis
-  const availableCategories = ["Sneakers", "Sepatu Formal", "Boots", "Sandals"];
-
-  // State untuk menampung semua filter yang aktif
-  const [filters, setFilters] = useState({
-    categories: ["Sneakers"], // Contoh nilai awal
-    rating: 4,
-    price: {
-      min: 200000,
-      max: 5000000,
-    },
+  // State untuk metadata pagination
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    totalPages: 1,
+    totalItems: 0,
   });
 
-  // Fungsi ini akan menerima state baru dari komponen anak
+  const availableCategories = ["Sneakers", "Formal", "Running", "Hiking"];
+
+  const [filters, setFilters] = useState({
+    categories: [],
+    rating: null,
+    price: { min: 0, max: 10000000 },
+  });
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      setLoading(true);
+      setError(null);
+
+      const params = new URLSearchParams();
+      if (filters.categories.length > 0) {
+        filters.categories.forEach((cat) => params.append("category", cat));
+      }
+      if (filters.rating) {
+        params.append("rating_gte", filters.rating);
+      }
+      params.append("price_gte", filters.price.min);
+      params.append("price_lte", filters.price.max);
+
+      try {
+        const response = await api.get(`/products?${params.toString()}`);
+
+        // PERBAIKAN 1: Ambil data dari properti yang benar
+        setProducts(response.data.products);
+        setPagination({
+          currentPage: response.data.currentPage,
+          totalPages: response.data.totalPages,
+          totalItems: response.data.totalItems,
+        });
+      } catch (err) {
+        console.error("Gagal mengambil data produk:", err);
+        setError("Gagal memuat produk. Silakan coba lagi nanti.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, [filters]);
+
   const handleFilterChange = (newFilters) => {
     setFilters(newFilters);
-    // Di sini Anda bisa memanggil API untuk fetch data baru berdasarkan filter
-    console.log("Filters updated:", newFilters);
+  };
+
+  const renderProductContent = () => {
+    if (loading) {
+      return <div className="text-center col-span-full py-10">Loading...</div>;
+    }
+    if (error) {
+      return (
+        <div className="text-center col-span-full py-10 text-red-500">
+          {error}
+        </div>
+      );
+    }
+    if (products.length === 0) {
+      return (
+        <div className="text-center col-span-full py-10">
+          Tidak ada produk yang cocok dengan filter Anda.
+        </div>
+      );
+    }
+    return products.map((product) => {
+      // PERBAIKAN 2: Proses URL gambar
+      const imageUrl =
+        product.images && product.images.length > 0
+          ? `${
+              import.meta.env.VITE_API_BASE_URL
+            }/${product.images[0].image_url.replace(/\\/g, "/")}`
+          : "https://placehold.co/400x300/e2e8f0/333?text=No+Image";
+
+      return (
+        <Link key={product.id} to={`/produk/${product.id}`}>
+          <Card
+            imageUrl={imageUrl}
+            name={product.name}
+            description={product.description}
+            // PERBAIKAN 3: Beri nilai default untuk rating
+            rating={product.rating || "N/A"}
+            price={`Rp${product.price.toLocaleString("id-ID")}`}
+          />
+        </Link>
+      );
+    });
   };
 
   return (
     <>
-      <div className="bg-black w-full max-h-full ">
-        <div className="bg-gray-100 w-full min-h-screen flex flex-col">
-          {/*herosection */}
-          <div
-            className="relative w-full h-[50vh] bg-cover bg-center mx-auto"
-            style={{ backgroundImage: `url(${heroimage})` }}
-          >
-            <div className="absolute inset-0 bg-black opacity-20"></div>
-            <div className="flex items-end justify-start h-full p-10">
-              <h1 className="text-white text-4xl font-bold">
-                Lorem Ipsum Dolor Sit Amet
-              </h1>
-            </div>
+      <div className="bg-gray-100 w-full min-h-screen flex flex-col">
+        {/* herosection */}
+        <div
+          className="relative w-full h-[50vh] bg-cover bg-center mx-auto"
+          style={{ backgroundImage: `url(${heroimage})` }}
+        >
+          <div className="absolute inset-0 bg-black opacity-20"></div>
+          <div className="flex items-end justify-start h-full p-10">
+            <h1 className="text-white text-4xl font-bold">Temukan Gaya Anda</h1>
           </div>
-          {/*end-herosection */}
+        </div>
 
-          {/*content-section*/}
-          <div className="flex flex-col md:flex-row  px-6">
-            {/* Deskripsi Kategori, filter section */}
-
-            <div className="flex justify-start items-center md:items-start">
-              <FilterSidebar
-                categories={availableCategories}
-                filters={filters}
-                onFilterChange={handleFilterChange}
-              />
-            </div>
-
-            {/*end deskripsi kategori, filter section*/}
-
-            {/*hasil Pencarian*/}
-            <div className="flex flex-col w-full py-4 md:px-10 md:py-6">
-              <div className="hidden md:block my-2">
-                <DynamicBreadcrumb />
-              </div>
-
-              {/*header pencarian*/}
-              <div className="flex items-center gap-4 mb-6">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth={1.5}
-                  stroke="currentColor"
-                  className="size-6"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18"
-                  />
-                </svg>
-
-                <h2 className="md:text-2xl text-lg font-semibold text-black">
-                  Hasil Pencarian Untuk{" "}
-                  <span className="text-gray-700">Sepatu Nike</span>
-                </h2>
-              </div>
-
-              <h2 className="text-lg text-gray-600 mb-4">
-                <span className="text-gray-600 mx-2">x</span>Hasil Pencarian
-              </h2>
-
-              {/*end header pencarian*/}
-
-              {/* Sorting Bar */}
-              <div className=" mb-6">
-                <SortingBar />
-              </div>
-              {/*end Sorting Bar*/}
-
-              {/* Card Section */}
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                {products.map((product) => (
-                  <Link key={product.id} to={`/kategori/${product.id}`}>
-                    <Card
-                      imageUrl={product.imageUrl}
-                      name={product.name}
-                      description={product.description}
-                      rating={product.rating}
-                      price={product.price}
-                    />
-                  </Link>
-                ))}
-              </div>
-
-              {/* End card section */}
-            </div>
-            {/*end hasil Pencarian*/}
+        <div className="container mx-auto flex flex-col md:flex-row px-6">
+          <div className="w-full md:w-1/4 lg:w-1/5 py-6">
+            <FilterSidebar
+              categories={availableCategories}
+              filters={filters}
+              onFilterChange={handleFilterChange}
+            />
           </div>
 
-          <div className="flex justify-center items-center py-20">
-            <button className="border-black border-2 font-medium w-3/5 md:w-1/4 text-black px-6 py-2.5 rounded-2xl hover:bg-black hover:text-white transition-colors">
-              Lihat Hasil Lainnya
-            </button>
+          <div className="w-full md:w-3/4 lg:w-4/5 py-4 md:px-10 md:py-6">
+            <div className="hidden md:block my-2">
+              <DynamicBreadcrumb />
+            </div>
+            <div className="mb-6">
+              <SortingBar />
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              {renderProductContent()}
+            </div>
           </div>
-          {/* End of content-section */}
+        </div>
+
+        <div className="flex justify-center items-center py-20">
+          <button className="border-black border-2 font-medium w-3/5 md:w-1/4 text-black px-6 py-2.5 rounded-2xl hover:bg-black hover:text-white transition-colors">
+            Lihat Hasil Lainnya
+          </button>
         </div>
       </div>
     </>

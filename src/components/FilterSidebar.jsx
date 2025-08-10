@@ -1,7 +1,7 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Range, getTrackBackground } from "react-range";
 
-// Helper component untuk Ikon
+// Helper component untuk Ikon Filter
 const FilterIcon = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -19,6 +19,7 @@ const FilterIcon = () => (
   </svg>
 );
 
+// Helper component untuk Ikon Bintang
 const StarIcon = ({ filled }) => (
   <svg
     className={`w-5 h-5 ${filled ? "text-black" : "text-gray-300"}`}
@@ -41,20 +42,36 @@ const formatRupiah = (number) => {
 };
 
 const FilterSidebar = ({ categories = [], filters, onFilterChange }) => {
+  // State lokal untuk mengontrol slider harga secara visual
+  const [priceValues, setPriceValues] = useState([
+    filters.price.min,
+    filters.price.max,
+  ]);
+
+  // Sinkronisasi state lokal jika filter dari induk berubah
+  useEffect(() => {
+    setPriceValues([filters.price.min, filters.price.max]);
+  }, [filters.price]);
+
   const handleCategoryChange = (category) => {
     const newCategories = filters.categories.includes(category)
       ? filters.categories.filter((c) => c !== category)
       : [...filters.categories, category];
-
     onFilterChange({ ...filters, categories: newCategories });
   };
 
   const handleRatingChange = (rating) => {
-    const newRating = filters.rating === rating ? 0 : rating;
+    const newRating = filters.rating === rating ? null : rating;
     onFilterChange({ ...filters, rating: newRating });
   };
 
-  const handlePriceChange = (values) => {
+  // Hanya mengupdate tampilan slider saat digeser
+  const handlePriceDrag = (values) => {
+    setPriceValues(values);
+  };
+
+  // Mengirim data ke induk saat slider selesai digeser
+  const handlePriceFinalChange = (values) => {
     onFilterChange({ ...filters, price: { min: values[0], max: values[1] } });
   };
 
@@ -63,9 +80,9 @@ const FilterSidebar = ({ categories = [], filters, onFilterChange }) => {
 
   return (
     <>
-      <div className="bg-gray-100 w-full max-w-xs p-6 rounded-lg hidden md:block   font-sans">
+      <div className="bg-white shadow-md rounded-lg w-full max-w-xs p-6 font-sans hidden md:block">
         {/* Header */}
-        <div className="flex items-center mb-6 pb-4 border-b border-gray-200 ">
+        <div className="flex items-center mb-6 pb-4 border-b border-gray-200">
           <FilterIcon />
           <h1 className="text-xl font-bold text-gray-900 uppercase tracking-wider">
             Filter
@@ -126,11 +143,12 @@ const FilterSidebar = ({ categories = [], filters, onFilterChange }) => {
           </h2>
           <div className="px-2 flex items-center h-8">
             <Range
-              values={[filters.price.min, filters.price.max]}
-              step={50000}
+              values={priceValues}
+              onChange={handlePriceDrag}
+              onFinalChange={handlePriceFinalChange}
+              step={100000}
               min={PRICE_MIN}
               max={PRICE_MAX}
-              onChange={handlePriceChange}
               renderTrack={({ props, children }) => (
                 <div
                   onMouseDown={props.onMouseDown}
@@ -140,10 +158,10 @@ const FilterSidebar = ({ categories = [], filters, onFilterChange }) => {
                 >
                   <div
                     ref={props.ref}
-                    className="h-1 w-full rounded-full self-center"
+                    className="h-1.5 w-full rounded-full self-center"
                     style={{
                       background: getTrackBackground({
-                        values: [filters.price.min, filters.price.max],
+                        values: priceValues,
                         colors: ["#E5E7EB", "#1F2937", "#E5E7EB"],
                         min: PRICE_MIN,
                         max: PRICE_MAX,
@@ -154,37 +172,31 @@ const FilterSidebar = ({ categories = [], filters, onFilterChange }) => {
                   </div>
                 </div>
               )}
-              renderThumb={({ props, isDragged }) => (
-                <div
-                  {...props}
-                  style={{ ...props.style }}
-                  className="h-5 w-5 bg-white border-2 border-gray-800 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black"
-                ></div>
-              )}
+              renderThumb={({ props }) => {
+                const { key, ...restProps } = props;
+                return (
+                  <div
+                    key={key}
+                    {...restProps}
+                    className="h-5 w-5 bg-white border-2 border-black rounded-full shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black"
+                  />
+                );
+              }}
             />
           </div>
           <div className="flex justify-between text-sm text-gray-600 mt-4">
-            <span>
-              Dari{" "}
-              <span className="font-semibold text-gray-800">
-                {formatRupiah(filters.price.min)}
-              </span>
-            </span>
-            <span>
-              sampai{" "}
-              <span className="font-semibold text-gray-800">
-                {formatRupiah(filters.price.max)}
-              </span>
-            </span>
+            <span>{formatRupiah(priceValues[0])}</span>
+            <span>{formatRupiah(priceValues[1])}</span>
           </div>
         </div>
       </div>
 
-      {/* Mobile View */}
-      <div className="md:hidden pt-4 flex items-center justify-center  bg-gray-100 rounded-lg">
-        <div className=" items-center  mb-2 pb-2 border-b border-gray-200 ">
+      {/* Mobile View Placeholder */}
+      <div className="md:hidden pt-4 flex items-center justify-center bg-white rounded-lg shadow-md p-4">
+        <button className="flex items-center font-semibold">
           <FilterIcon />
-        </div>
+          <span>Filter & Urutkan</span>
+        </button>
       </div>
     </>
   );

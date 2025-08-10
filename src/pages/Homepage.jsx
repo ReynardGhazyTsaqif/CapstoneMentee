@@ -1,107 +1,66 @@
+import React, { useState, useEffect } from "react"; // 1. Impor useState dan useEffect
 import heroimage from "../assets/img/heroimage.jpg";
 import bannerimage from "../assets/img/bannerimage.jpg";
+import api from "../api/axios"; // 2. Impor instance axios
 
 import Navbar from "../components/Navbar";
 import Card from "../components/CardShoes";
-
-//test card
-const products = [
-  {
-    id: 1,
-    name: "Nike Air Max",
-    description: "Running Sneaker",
-    price: "$120",
-    rating: "4.9",
-    imageUrl: "https://images.unsplash.com/photo-1542291026-7eec264c27ff",
-  },
-  {
-    id: 2,
-    name: "Adidas Ultraboost",
-    description: "Comfort & Style",
-    price: "$180",
-    rating: "4.8",
-    imageUrl: "https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a",
-  },
-  {
-    id: 3,
-    name: "Puma Classic",
-    description: "Suede Finish",
-    price: "$65",
-    rating: "4.7",
-    imageUrl: "https://images.unsplash.com/photo-1600185365926-3a2ce3cdb9eb",
-  },
-  {
-    id: 4,
-    name: "New Balance 574",
-    description: "Vintage Look",
-    price: "$85",
-    rating: "4.8",
-    imageUrl: "https://images.unsplash.com/photo-1579338559194-a162d19bf842",
-  },
-
-  {
-    id: 5,
-    name: "Nike Air Max",
-    description: "Running Sneaker",
-    price: "$120",
-    rating: "4.9",
-    imageUrl: "https://images.unsplash.com/photo-1542291026-7eec264c27ff",
-  },
-  {
-    id: 6,
-    name: "Adidas Ultraboost",
-    description: "Comfort & Style",
-    price: "$180",
-    rating: "4.8",
-    imageUrl: "https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a",
-  },
-  {
-    id: 7,
-    name: "Puma Classic",
-    description: "Suede Finish",
-    price: "$65",
-    rating: "4.7",
-    imageUrl: "https://images.unsplash.com/photo-1600185365926-3a2ce3cdb9eb",
-  },
-  {
-    id: 8,
-    name: "New Balance 574",
-    description: "Vintage Look",
-    price: "$85",
-    rating: "4.8",
-    imageUrl: "https://images.unsplash.com/photo-1579338559194-a162d19bf842",
-  },
-];
-// End of test card
+import { Link } from "react-router-dom"; // Impor Link jika belum ada
 
 export default function Homepage() {
+  // 3. Hapus data 'products' statis, ganti dengan state
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // 4. Gunakan useEffect untuk mengambil data saat halaman dimuat
+  useEffect(() => {
+    const fetchProducts = async () => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const response = await api.get("/products?limit=8"); // Ambil 8 produk
+        // PERBAIKAN 1: Ambil array dari dalam 'response.data.products'
+        setProducts(response.data.products);
+      } catch (err) {
+        console.error("Gagal mengambil produk homepage:", err);
+        setError("Gagal memuat produk unggulan.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []); // Array dependensi kosong agar hanya berjalan sekali saat mount
+
   return (
     <>
       <div className="bg-black w-full max-h-full">
         <div className="bg-white w-full min-h-screen mx-auto flex flex-col">
-          {/*hero-section*/}
+          {/* hero-section (tidak ada perubahan) */}
           <div
             className="relative w-full h-[75vh] bg-cover bg-center mx-auto"
             style={{ backgroundImage: `url(${heroimage})` }}
           >
             <div className="absolute inset-0 bg-black opacity-50">
-              <div className="relative z-10 flex flex-col justify-between h-full p-8 md:p-12">
-                {/* Teks Atas */}
-                <Navbar />
-
-                {/* Teks Bawah */}
-                <h1 className="text-white md:text-4xl md:font-bold">
-                  Lorem Ipsum <br />
-                  Dolor Sit Amet
-                </h1>
+              <div className="relative z-10 flex flex-col justify-between h-full p-6">
+                <Navbar variant="transparent" />{" "}
+                {/* Gunakan Navbar yang sudah ada */}
+                <div className="p-8 md:p-12">
+                  <h1 className="text-white text-4xl md:text-5xl font-bold">
+                    Lorem Ipsum <br />
+                    Dolor Sit Amet
+                  </h1>
+                </div>
               </div>
             </div>
           </div>
-          {/*end-hero-section*/}
+          {/* end-hero-section */}
 
-          {/*content-section*/}
+          {/* content-section (tidak ada perubahan) */}
           <div className="flex items-center justify-center p-6 py-16">
-            <p className="text-gray-700 text-center text-xl font-medium  max-w-3/4">
+            <p className="text-gray-700 text-center text-xl font-medium max-w-3xl">
               Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do
               eiusmod tempor incididunt ut labore et dolore magna aliqua.
             </p>
@@ -112,33 +71,56 @@ export default function Homepage() {
           >
             <div className="absolute inset-0 bg-black opacity-50"></div>
           </div>
-          <div className="w-full h-[80vh]">
-            <div className="flex flex-col items-center justify-center py-10">
-              <h2 className="font-semibold text-4xl">Crafter To Be Noticed</h2>
-              <h3 className="font-medium text-center text-black mt-4">
+
+          {/* Bagian ini tidak berubah */}
+          <div className="container mx-auto">
+            <div className="flex flex-col items-center justify-center py-16 px-4">
+              <h2 className="font-semibold text-4xl text-center">
+                Crafter To Be Noticed
+              </h2>
+              <h3 className="font-medium text-center text-gray-600 mt-4 max-w-2xl">
                 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do
                 eiusmod tempor incididunt ut labore et dolore magna aliqua.
               </h3>
             </div>
 
+            {/* --- PERUBAHAN DI SINI --- */}
             {/* Card Section */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 px-4">
-              {products.map((product) => (
-                <Card
-                  key={product.id}
-                  imageUrl={product.imageUrl}
-                  name={product.name}
-                  description={product.description}
-                  rating={product.rating}
-                  price={product.price}
-                />
-              ))}
+            <div className="px-4 pb-16">
+              {loading && <p className="text-center">Loading produk...</p>}
+              {error && <p className="text-center text-red-500">{error}</p>}
+              {!loading && !error && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 px-4 gap-6">
+                  {products.map((product) => {
+                    // PERBAIKAN 2: Proses URL gambar
+                    const imageUrl =
+                      product.images && product.images.length > 0
+                        ? `${
+                            import.meta.env.VITE_API_BASE_URL
+                          }/${product.images[0].image_url.replace(/\\/g, "/")}`
+                        : "https://placehold.co/400x300/e2e8f0/333?text=No+Image";
+
+                    return (
+                      <Link key={product.id} to={`/produk/${product.id}`}>
+                        <Card
+                          imageUrl={imageUrl}
+                          name={product.name}
+                          description={product.description}
+                          // PERBAIKAN 3: Beri nilai default untuk rating
+                          rating={product.rating || "N/A"}
+                          price={`Rp${product.price.toLocaleString("id-ID")}`}
+                        />
+                      </Link>
+                    );
+                  })}
+                </div>
+              )}
             </div>
             {/* End of Card Section */}
 
-            {/* Exclusive Section */}
-            <section className="container mx-auto pb-20">
-              <div className="flex flex-col lg:flex-row lg:justify-between items-center mt-20 lg:mt-40 px-6 md:px-10 gap-12 mb-20">
+            {/* Exclusive Section (tidak ada perubahan) */}
+            <section className="pb-20">
+              <div className="flex flex-col lg:flex-row lg:justify-between items-center px-6 md:px-10 gap-12">
                 <div className="w-full lg:w-2/3 flex flex-col items-center lg:items-start text-center lg:text-left gap-8">
                   <h1 className="text-4xl lg:text-5xl font-medium">
                     Exclusive Only For You
@@ -163,7 +145,6 @@ export default function Homepage() {
             </section>
             {/* End of Exclusive Section */}
           </div>
-          {/* End of content-section*/}
         </div>
       </div>
     </>

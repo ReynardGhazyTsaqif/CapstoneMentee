@@ -1,68 +1,68 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import DynamicBreadcrumb from "../components/DynamicBreadcrumb";
 import Card from "../components/CardShoes";
-
-// --- PERUBAHAN 1: Gunakan data spesifik untuk sepatu ---
-const products = [
-  {
-    id: 1,
-    brand: "Nike",
-    name: "Nike Air Force 1 '07",
-    price: "Rp1.729.000",
-    rating: 4.9,
-    reviewCount: "8,5RB",
-    sold: "12RB",
-    description:
-      "Kenyamanan legendaris dan gaya ikonik. Nike Air Force 1 '07 memiliki semua yang Anda kenal baik: lapisan kulit yang tegas, warna serba putih yang bersih, dan kilau yang sempurna untuk membuat Anda bersinar.",
-    imageGallery: [
-      "https://i.imgur.com/8a2t6h9.png", // Ganti dengan URL gambar sepatu
-      "https://i.imgur.com/R3b1CAb.png",
-      "https://i.imgur.com/T0a36G2.png",
-    ],
-    specifications: {
-      Warna: "Putih/Putih",
-      Tipe: "Sneakers Kasual",
-      "Material Atas": "Kulit",
-      "Material Sol": "Karet",
-      "Kode SKU": "CW2288-111",
-    },
-    sizes: [
-      { size: "40", stock: 12 },
-      { size: "41", stock: 8 },
-      { size: "42", stock: 0 },
-      { size: "43", stock: 5 },
-      { size: "44", stock: 11 },
-    ],
-  },
-  // Produk rekomendasi
-  {
-    id: 2,
-    name: "Adidas Samba OG",
-    price: "Rp2.100.000",
-    rating: "4.8",
-    imageUrl: "https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a",
-  },
-  {
-    id: 3,
-    name: "New Balance 550",
-    price: "Rp2.599.000",
-    rating: "4.7",
-    imageUrl: "https://images.unsplash.com/photo-1600185365926-3a2ce3cdb9eb",
-  },
-];
+import api from "../api/axios"; // Pastikan path ini benar
 
 export default function DetailProduk() {
   const { productId } = useParams();
-  const product = products.find((p) => p.id === parseInt(productId));
 
-  // State untuk gambar aktif, kuantitas, dan ukuran yang dipilih
-  const [activeImage, setActiveImage] = useState(product?.imageGallery[0]);
+  // 1. Siapkan state untuk produk, rekomendasi, loading, dan error
+  const [product, setProduct] = useState(null);
+  const [recommendations, setRecommendations] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // State untuk UI interaktif
+  const [activeImage, setActiveImage] = useState("");
   const [quantity, setQuantity] = useState(1);
   const [selectedSize, setSelectedSize] = useState(null);
 
+  // 2. Gunakan useEffect untuk mengambil data dari API
+  useEffect(() => {
+    const fetchProductData = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        // Panggil API untuk detail produk dan rekomendasi secara bersamaan
+        const [productResponse, recommendationsResponse] = await Promise.all([
+          api.get(`/products`), // Ganti dari /produk ke /products
+          api.get(`/products/${productId}/rekomendasi`), // Ganti dari /produk ke /products
+        ]);
+
+        const fetchedProduct = productResponse.data;
+        setProduct(fetchedProduct);
+        setRecommendations(recommendationsResponse.data);
+
+        // Atur gambar aktif pertama kali setelah data didapat
+        if (
+          fetchedProduct.imageGallery &&
+          fetchedProduct.imageGallery.length > 0
+        ) {
+          setActiveImage(fetchedProduct.imageGallery[0]);
+        }
+      } catch (err) {
+        console.error("Gagal mengambil data produk:", err);
+        setError("Produk tidak dapat ditemukan atau terjadi kesalahan server.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProductData();
+  }, [productId]); // Efek ini akan berjalan lagi jika productId berubah
+
+  // 3. Tampilkan UI berdasarkan status loading dan error
+  if (loading) {
+    return <div className="text-center py-20">Loading...</div>;
+  }
+
+  if (error) {
+    return <div className="text-center py-20 text-red-500">{error}</div>;
+  }
+
   if (!product) {
-    return <div>Produk tidak ditemukan!</div>;
+    return <div className="text-center py-20">Produk tidak ditemukan!</div>;
   }
 
   const handleAddToCart = () => {
@@ -70,12 +70,12 @@ export default function DetailProduk() {
       alert("Silakan pilih ukuran terlebih dahulu!");
       return;
     }
-    // Logika tambah ke keranjang...
     console.log(
       `Menambahkan ${quantity} buah ${product.name} ukuran ${selectedSize} ke keranjang.`
     );
   };
 
+  // 4. JSX sekarang menggunakan data dari state
   return (
     <div className="bg-white">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -124,10 +124,9 @@ export default function DetailProduk() {
               <span>{product.sold} Terjual</span>
             </div>
             <p className="text-4xl font-light text-gray-900 my-6">
-              {product.price}
+              Rp{product.price.toLocaleString("id-ID")}
             </p>
 
-            {/* --- PERUBAHAN 2: PEMILIH UKURAN --- */}
             <div className="mb-6">
               <h3 className="text-sm font-semibold mb-3">Pilih Ukuran</h3>
               <div className="flex flex-wrap gap-2">
@@ -136,18 +135,15 @@ export default function DetailProduk() {
                     key={s.size}
                     onClick={() => setSelectedSize(s.size)}
                     disabled={s.stock === 0}
-                    className={`px-4 py-2 border rounded-md text-sm transition-colors
-                                ${
-                                  selectedSize === s.size
-                                    ? "bg-black text-white"
-                                    : "bg-white text-black"
-                                }
-                                ${
-                                  s.stock === 0
-                                    ? "bg-gray-100 text-gray-400 cursor-not-allowed line-through"
-                                    : "hover:bg-gray-600"
-                                }
-                            `}
+                    className={`px-4 py-2 border rounded-md text-sm transition-colors ${
+                      selectedSize === s.size
+                        ? "bg-black text-white"
+                        : "bg-white text-black"
+                    } ${
+                      s.stock === 0
+                        ? "bg-gray-100 text-gray-400 cursor-not-allowed line-through"
+                        : "hover:bg-gray-100"
+                    }`}
                   >
                     {s.size}
                   </button>
@@ -210,11 +206,11 @@ export default function DetailProduk() {
             Rekomendasi Produk Serupa
           </h3>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
-            {products.slice(1, 5).map((p) => (
+            {recommendations.map((p) => (
               <Link key={p.id} to={`/produk/${p.id}`}>
                 <Card
                   name={p.name}
-                  price={p.price}
+                  price={`Rp${p.price.toLocaleString("id-ID")}`}
                   rating={p.rating}
                   imageUrl={p.imageUrl}
                 />
