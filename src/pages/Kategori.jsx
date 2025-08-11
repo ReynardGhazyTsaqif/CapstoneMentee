@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import heroimage from "../assets/img/heroimage.jpg";
-import FilterSidebar from "../components/FilterSideBar";
+import FilterSidebar from "../components/FilterSidebar";
 import SortingBar from "../components/SortingBar";
 import Card from "../components/CardShoes";
 import DynamicBreadcrumb from "../components/DynamicBreadcrumb";
@@ -39,8 +39,8 @@ export default function Kategori() {
       if (filters.rating) {
         params.append("rating_gte", filters.rating);
       }
-      params.append("price_gte", filters.price.min);
-      params.append("price_lte", filters.price.max);
+      params.append("minPrice", filters.price.min);
+      params.append("maxPrice", filters.price.max);
 
       try {
         const response = await api.get(`/products?${params.toString()}`);
@@ -91,11 +91,11 @@ export default function Kategori() {
         product.images && product.images.length > 0
           ? `${
               import.meta.env.VITE_API_BASE_URL
-            }/${product.images[0].image_url.replace(/\\/g, "/")}`
+            }${product.images[0].image_url.replace(/\\/g, "/")}`
           : "https://placehold.co/400x300/e2e8f0/333?text=No+Image";
 
       return (
-        <Link key={product.id} to={`/produk/${product.id}`}>
+        <Link key={product.id} to={`/kategori/${product.id}`}>
           <Card
             imageUrl={imageUrl}
             name={product.name}

@@ -2,39 +2,40 @@ import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import DynamicBreadcrumb from "../components/DynamicBreadcrumb";
 import Card from "../components/CardShoes";
-import api from "../api/axios"; // Pastikan path ini benar
+import api from "../api/axios";
 
 export default function DetailProduk() {
   const { productId } = useParams();
 
-  // 1. Siapkan state untuk produk, rekomendasi, loading, dan error
   const [product, setProduct] = useState(null);
   const [recommendations, setRecommendations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // State untuk UI interaktif
   const [activeImage, setActiveImage] = useState("");
   const [quantity, setQuantity] = useState(1);
   const [selectedSize, setSelectedSize] = useState(null);
 
-  // 2. Gunakan useEffect untuk mengambil data dari API
   useEffect(() => {
+    // Fungsi untuk mengambil data produk utama
     const fetchProductData = async () => {
       setLoading(true);
       setError(null);
       try {
-        // Panggil API untuk detail produk dan rekomendasi secara bersamaan
-        const [productResponse, recommendationsResponse] = await Promise.all([
-          api.get(`/products`), // Ganti dari /produk ke /products
-          api.get(`/products/${productId}/rekomendasi`), // Ganti dari /produk ke /products
-        ]);
+        // PERBAIKAN 1: Panggil endpoint detail produk yang benar
+        const response = await api.get(`/products/${productId}`);
 
-        const fetchedProduct = productResponse.data;
+        // PERBAIKAN 2: Ubah string 'specifications' menjadi objek JSON
+        const fetchedProduct = response.data;
+        if (typeof fetchedProduct.specifications === "string") {
+          fetchedProduct.specifications = JSON.parse(
+            fetchedProduct.specifications
+          );
+        }
+
         setProduct(fetchedProduct);
-        setRecommendations(recommendationsResponse.data);
 
-        // Atur gambar aktif pertama kali setelah data didapat
+        // Atur gambar aktif pertama kali
         if (
           fetchedProduct.imageGallery &&
           fetchedProduct.imageGallery.length > 0
@@ -49,21 +50,27 @@ export default function DetailProduk() {
       }
     };
 
+    // (Opsional) Fungsi terpisah untuk mengambil rekomendasi
+    const fetchRecommendations = async () => {
+      try {
+        // Asumsikan endpoint ini ada
+        const response = await api.get(`/products/${productId}/rekomendasi`);
+        setRecommendations(response.data);
+      } catch (err) {
+        console.error("Gagal mengambil rekomendasi:", err);
+        // Tidak perlu set error utama jika hanya rekomendasi yang gagal
+      }
+    };
+
     fetchProductData();
+    fetchRecommendations();
   }, [productId]); // Efek ini akan berjalan lagi jika productId berubah
 
-  // 3. Tampilkan UI berdasarkan status loading dan error
-  if (loading) {
-    return <div className="text-center py-20">Loading...</div>;
-  }
-
-  if (error) {
+  if (loading) return <div className="text-center py-20">Loading...</div>;
+  if (error)
     return <div className="text-center py-20 text-red-500">{error}</div>;
-  }
-
-  if (!product) {
+  if (!product)
     return <div className="text-center py-20">Produk tidak ditemukan!</div>;
-  }
 
   const handleAddToCart = () => {
     if (!selectedSize) {
@@ -75,7 +82,6 @@ export default function DetailProduk() {
     );
   };
 
-  // 4. JSX sekarang menggunakan data dari state
   return (
     <div className="bg-white">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -191,12 +197,16 @@ export default function DetailProduk() {
           </h3>
           <p className="text-gray-600 mb-6">{product.description}</p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-            {Object.entries(product.specifications).map(([key, value]) => (
-              <div key={key} className="flex border-b py-2">
-                <span className="w-1/3 text-gray-500">{key}</span>
-                <span className="w-2/3 font-medium text-gray-800">{value}</span>
-              </div>
-            ))}
+            {/* Pastikan specifications adalah objek sebelum di-map */}
+            {typeof product.specifications === "object" &&
+              Object.entries(product.specifications).map(([key, value]) => (
+                <div key={key} className="flex border-b py-2">
+                  <span className="w-1/3 text-gray-500">{key}</span>
+                  <span className="w-2/3 font-medium text-gray-800">
+                    {value}
+                  </span>
+                </div>
+              ))}
           </div>
         </div>
 
@@ -211,8 +221,10 @@ export default function DetailProduk() {
                 <Card
                   name={p.name}
                   price={`Rp${p.price.toLocaleString("id-ID")}`}
-                  rating={p.rating}
-                  imageUrl={p.imageUrl}
+                  rating={p.rating || "N/A"}
+                  imageUrl={
+                    p.images && p.images.length > 0 ? p.images[0].image_url : ""
+                  }
                 />
               </Link>
             ))}

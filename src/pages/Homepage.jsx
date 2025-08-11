@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react"; // 1. Impor useState dan use
 import heroimage from "../assets/img/heroimage.jpg";
 import bannerimage from "../assets/img/bannerimage.jpg";
 import api from "../api/axios"; // 2. Impor instance axios
-
+import Footer from "../components/Footer";
 import Navbar from "../components/Navbar";
 import Card from "../components/CardShoes";
 import { Link } from "react-router-dom"; // Impor Link jika belum ada
@@ -93,17 +93,24 @@ export default function Homepage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 px-4 gap-6">
                   {products.map((product) => {
                     // PERBAIKAN 2: Proses URL gambar
+
                     const imageUrl =
                       product.images && product.images.length > 0
-                        ? `${
-                            import.meta.env.VITE_API_BASE_URL
-                          }/${product.images[0].image_url.replace(/\\/g, "/")}`
-                        : "https://placehold.co/400x300/e2e8f0/333?text=No+Image";
+                        ? // Langsung ambil URL dari API karena sudah lengkap
+                          product.images[0].image_url
+                        : // Sediakan gambar placeholder jika tidak ada gambar
+                          "https://placehold.co/400x300/e2e8f0/333?text=No+Image";
+
+                    // Tambahan: Perbaiki double slash jika masih ada dari API
+                    const cleanImageUrl = imageUrl.replace(
+                      /([^:]\/)\/+/g,
+                      "$1"
+                    );
 
                     return (
                       <Link key={product.id} to={`/produk/${product.id}`}>
                         <Card
-                          imageUrl={imageUrl}
+                          imageUrl={cleanImageUrl}
                           name={product.name}
                           description={product.description}
                           // PERBAIKAN 3: Beri nilai default untuk rating
@@ -146,6 +153,7 @@ export default function Homepage() {
             {/* End of Exclusive Section */}
           </div>
         </div>
+        <Footer />
       </div>
     </>
   );

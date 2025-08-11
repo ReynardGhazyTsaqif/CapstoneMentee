@@ -2,13 +2,7 @@ import React from "react";
 import { Outlet } from "react-router-dom";
 import Navbar from "./Navbar";
 import DynamicBreadcrumb from "./DynamicBreadcrumb";
-
-// Komponen Footer opsional sebagai contoh
-const Footer = () => (
-  <footer className="bg-black text-white text-center p-4">
-    © 2025 BrandName. All rights reserved.
-  </footer>
-);
+import Footer from "./Footer";
 
 export default function Layout() {
   return (
@@ -26,6 +20,8 @@ export default function Layout() {
           </div>
         </div>
       </main>
+
+      <Footer />
     </div>
   );
 }

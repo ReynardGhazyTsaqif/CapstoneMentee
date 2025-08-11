@@ -18,7 +18,7 @@ export default function Card({ imageUrl, name, description, price, rating }) {
   };
 
   return (
-    <div className="bg-white shadow-md rounded-lg overflow-hidden h-full flex flex-col group">
+    <div className="bg-white shadow-md rounded-lg overflow-hidden h-full flex flex-col group ">
       {/* --- Bagian Gambar --- */}
       {/* 1. Tambahkan 'relative' pada pembungkus gambar */}
       <div className="w-full h-48 bg-gray-200 relative">

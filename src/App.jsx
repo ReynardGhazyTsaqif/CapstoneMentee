@@ -3,7 +3,7 @@ import Kategori from "./pages/Kategori";
 import DetailProduk from "./pages/DetailProduk";
 import Layout from "./components/Layout";
 import { Routes, Route, Link } from "react-router-dom";
-import Whislist from "./pages/Wishlist";
+import Wishlist from "./pages/Wishlist";
 
 export default function App() {
   return (
@@ -13,7 +13,7 @@ export default function App() {
       <Route element={<Layout />}>
         <Route path="/kategori" element={<Kategori />} />
         <Route path="/kategori/:productId" element={<DetailProduk />} />
-        <Route path="/whislist" element={<Whislist />} />
+        <Route path="/wishlist" element={<Wishlist />} />
       </Route>
 
       {/* <Route path="*" element={<NotFoundPage />} /> */}
