@@ -1,36 +1,24 @@
-// src/App.jsx
-import React from "react";
-import { StrictMode } from "react";
-import "./index.css";
-import "./App.css";
-
+import Homepage from "./feat/Homepage";
+import Kategori from "./feat/Kategori";
+import DetailProduk from "./feat/DetailProduk";
+import Layout from "./components/Layout";
+import ShopCart from "./feat/ShopCart";
 import { Routes, Route, Link } from "react-router-dom";
+import Wishlist from "./feat/Wishlist";
 
-import Login from "./pages/auth/Login";
-import Register from "./pages/auth/Register";
-import ForgotPassword from "./Pages/auth/forgotpassword";
-import ResetPassword from "./pages/auth/ResetPassword";
-import ProductForm from "./pages/admin/ProductForm";
-import ProductList from "./pages/admin/ProductList";
-import UserDashboard from "./pages/user/UserDashboard";
-import ConfirmCode from "./pages/auth/ConfirmCode";
-
-function App() {
+export default function App() {
   return (
     <Routes>
-      <Route path="/" element={<Login />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
-      <Route path="/resetpassword" element={<ResetPassword />} />
-      <Route path="/forgotpassword" element={<ForgotPassword />} />
-      <Route path="/confirmcode" element={<ConfirmCode />} />
+      <Route path="/" element={<Homepage />} />
 
-      <Route path="/user/dashboard" element={<UserDashboard />} />
-      <Route path="/admin/productform" element={<ProductForm />} />
-      <Route path="/admin/productlist" element={<ProductList />} />
-      <Route path="*" element={<div>404 Not Found</div>} />
+      <Route element={<Layout />}>
+        <Route path="/kategori" element={<Kategori />} />
+        <Route path="/kategori/:productId" element={<DetailProduk />} />
+        <Route path="/wishlist" element={<Wishlist />} />
+        <Route path="/shopcart" element={<ShopCart />} />
+      </Route>
+
+      {/* <Route path="*" element={<NotFoundPage />} /> */}
     </Routes>
   );
 }
-
-export default App;
