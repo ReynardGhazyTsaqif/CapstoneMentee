@@ -3,6 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import DynamicBreadcrumb from "../components/DynamicBreadcrumb";
 import Card from "../components/CardShoes";
 import api from "../api/axios";
+import { Heart } from "lucide-react";
 
 export default function DetailProduk() {
   const { productId } = useParams();
@@ -15,6 +16,8 @@ export default function DetailProduk() {
   const [activeImage, setActiveImage] = useState("");
   const [quantity, setQuantity] = useState(1);
   const [selectedSize, setSelectedSize] = useState(null);
+
+  const [isWishlisted, setIsWishlisted] = useState(false);
 
   useEffect(() => {
     // Fungsi untuk mengambil data produk utama
@@ -80,6 +83,29 @@ export default function DetailProduk() {
     console.log(
       `Menambahkan ${quantity} buah ${product.name} ukuran ${selectedSize} ke keranjang.`
     );
+  };
+
+  const handleWishlistToggle = async () => {
+    // Simpan state sebelum diubah, untuk jaga-jaga jika API gagal
+    const originalWishlistStatus = isWishlisted;
+
+    // Optimistic Update: Langsung ubah UI agar terasa cepat
+    setIsWishlisted(!originalWishlistStatus);
+
+    try {
+      if (!originalWishlistStatus) {
+        // Jika sebelumnya tidak ada di wishlist, maka TAMBAHKAN
+        await api.post("/wishlist", { productId: product.id });
+      } else {
+        // Jika sebelumnya sudah ada di wishlist, maka HAPUS
+        await api.delete(`/wishlist/${product.id}`);
+      }
+    } catch (err) {
+      console.error("Gagal update wishlist:", err);
+      // Jika API gagal, kembalikan UI ke state semula
+      setIsWishlisted(originalWishlistStatus);
+      alert("Gagal memperbarui wishlist. Silakan coba lagi.");
+    }
   };
 
   return (
@@ -181,12 +207,30 @@ export default function DetailProduk() {
               </div>
             </div>
 
-            <button
-              onClick={handleAddToCart}
-              className="w-full bg-black text-white py-3 rounded-lg font-semibold hover:bg-gray-800 transition-colors"
-            >
-              Tambah ke Keranjang
-            </button>
+            <div className="flex items-center gap-4 mt-8">
+              {/* Tombol Wishlist */}
+              <button
+                onClick={handleWishlistToggle}
+                className="p-3 border-2 border-gray-300 rounded-lg hover:bg-gray-100 transition-colors"
+                aria-label="Toggle Wishlist"
+              >
+                <Heart
+                  className={`w-6 h-6 transition-colors ${
+                    isWishlisted
+                      ? "fill-red-500 stroke-red-500"
+                      : "text-gray-800"
+                  }`}
+                />
+              </button>
+
+              {/* Tombol Tambah ke Keranjang */}
+              <button
+                onClick={handleAddToCart}
+                className="w-full bg-black text-white py-3 rounded-lg font-semibold hover:bg-gray-800 transition-colors"
+              >
+                Tambah ke Keranjang
+              </button>
+            </div>
           </div>
         </div>
 
