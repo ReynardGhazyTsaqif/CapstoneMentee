@@ -16,7 +16,8 @@ export default function ConfirmCode() {
     if (userEmail) {
       setEmail(userEmail);
     } else {
-      navigate("/resetpassword");
+      // Arahkan ke awal alur jika tidak ada email
+      navigate("/forgotpassword");
     }
   }, [location, navigate]);
 
@@ -26,15 +27,14 @@ export default function ConfirmCode() {
     setError(null);
 
     try {
-      // PERBAIKAN 1: Panggil endpoint yang benar & simpan hasilnya ke variabel 'response'
-      const response = await api.post("/auth/reset-password", { email, code });
+      // PERBAIKAN 1: Kirim 'code' dari state, bukan 'token'
+      const response = await api.post("/auth/verify-code", { email, code });
 
-      // PERBAIKAN 2: Ambil token dari 'response' yang sekarang sudah ada
-      // (Asumsikan backend mengembalikan token di dalam properti 'token')
-      const resetToken = response.data.token;
+      // PERBAIKAN 2: Ambil token dari 'resetAuthToken' sesuai format API
+      const resetToken = response.data.resetAuthToken;
 
-      // PERBAIKAN 3: Bawa email DAN token ke halaman reset password
-      navigate("/reset-password", { state: { email, token: resetToken } });
+      // PERBAIKAN 3: Kirim 'resetToken' yang sudah didapat
+      navigate("/resetpassword", { state: { email, token: resetToken } });
     } catch (err) {
       console.error("Full error response:", err.response);
       const errorMessage =
@@ -47,11 +47,9 @@ export default function ConfirmCode() {
   };
 
   return (
+    // ... JSX Anda (tidak perlu diubah) ...
     <div className="flex flex-col lg:flex-row w-full min-h-screen bg-gray-950">
-      {/* Left side - Dark background (hidden on mobile) */}
       <div className="hidden lg:block lg:w-1/4 xl:w-1/3 bg-gray-950"></div>
-
-      {/* Right side - Form */}
       <div className="bg-white w-full lg:w-3/4 xl:w-2/3 min-h-screen lg:rounded-tl-2xl lg:rounded-bl-2xl">
         <div className="flex flex-col justify-center items-start px-4 sm:px-6 lg:px-20 pt-8 lg:pt-20">
           <h1 className="text-black text-xl sm:text-2xl lg:text-3xl font-semibold mb-4">
@@ -62,7 +60,6 @@ export default function ConfirmCode() {
             <strong>{email}</strong>
           </p>
         </div>
-
         <div className="px-6 sm:px-12 lg:px-20 max-w-md lg:max-w-none mx-auto lg:mx-0">
           <form onSubmit={handleVerifyCode} className="space-y-4">
             {error && (
@@ -70,8 +67,6 @@ export default function ConfirmCode() {
                 {error}
               </div>
             )}
-
-            {/* Kode Verifikasi */}
             <div>
               <label className="block text-sm sm:text-base font-medium text-gray-700 mb-2">
                 Kode Verifikasi
@@ -84,8 +79,6 @@ export default function ConfirmCode() {
                 required
               />
             </div>
-
-            {/* Tombol Kirim */}
             <button
               type="submit"
               disabled={loading}
