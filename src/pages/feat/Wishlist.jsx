@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import heroimage from "../assets/img/heroimage.jpg";
+import heroimage from "../../assets/img/heroimage.jpg";
 import Card from "../../components/CardShoes";
 import { Link } from "react-router-dom";
 import api from "../../api/axios"; // Menggunakan instance axios

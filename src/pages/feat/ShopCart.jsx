@@ -1,4 +1,4 @@
-import heroimage from "../assets/img/heroimage.jpg";
+import heroimage from "../../assets/img/heroimage.jpg";
 import { useState } from "react";
 
 // Helper untuk format Rupiah

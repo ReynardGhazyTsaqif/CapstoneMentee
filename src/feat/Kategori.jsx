@@ -4,7 +4,7 @@ import FilterSidebar from "../../components/FilterSidebar";
 import SortingBar from "../../components/SortingBar";
 import Card from "../../components/CardShoes";
 import DynamicBreadcrumb from "../../components/DynamicBreadcrumb";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import api from "../../api/axios";
 
 export default function Kategori() {
@@ -26,6 +26,8 @@ export default function Kategori() {
     rating: null,
     price: { min: 0, max: 10000000 },
   });
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -67,6 +69,34 @@ export default function Kategori() {
     setFilters(newFilters);
   };
 
+  // 1. TAMBAHKAN FUNGSI UNTUK MENANGANI AKSI WISHLIST
+  const handleWishlistToggle = async (productId, currentStatus) => {
+    try {
+      if (currentStatus) {
+        // Jika sudah di wishlist, hapus
+        await api.delete(`/wishlist/${productId}`);
+      } else {
+        // Jika belum, tambahkan
+        await api.post("/wishlist", { productId });
+      }
+
+      // Update tampilan di UI secara manual setelah API berhasil
+      const updatedProducts = products.map((p) =>
+        p.id === productId ? { ...p, isWishlisted: !currentStatus } : p
+      );
+      setProducts(updatedProducts);
+    } catch (err) {
+      console.error("Gagal update wishlist:", err);
+      // Cek jika error karena belum login (401)
+      if (err.response && err.response.status === 401) {
+        alert("Anda harus login untuk menambahkan ke wishlist.");
+        navigate("/login"); // Arahkan ke halaman login
+      } else {
+        alert("Gagal memperbarui wishlist.");
+      }
+    }
+  };
+
   const renderProductContent = () => {
     if (loading) {
       return <div className="text-center col-span-full py-10">Loading...</div>;
@@ -95,16 +125,19 @@ export default function Kategori() {
           : "https://placehold.co/400x300/e2e8f0/333?text=No+Image";
 
       return (
-        <Link key={product.id} to={`/kategori/${product.id}`}>
-          <Card
-            imageUrl={imageUrl}
-            name={product.name}
-            description={product.description}
-            // PERBAIKAN 3: Beri nilai default untuk rating
-            rating={product.rating || "N/A"}
-            price={`Rp${product.price.toLocaleString("id-ID")}`}
-          />
-        </Link>
+        <Card
+          imageUrl={imageUrl}
+          name={product.name}
+          description={product.description}
+          // PERBAIKAN 3: Beri nilai default untuk rating
+          rating={product.rating || "N/A"}
+          price={`Rp${product.price.toLocaleString("id-ID")}`}
+          isWishlisted={product.isWishlisted}
+          onWishlistToggle={() =>
+            handleWishlistToggle(product.id, product.isWishlisted)
+          }
+          linkTo={`/produk/${product.id}`}
+        />
       );
     });
   };

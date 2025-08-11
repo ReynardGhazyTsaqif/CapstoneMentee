@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react"; // 1. Impor useState dan useEffect
-import heroimage from "../assets/img/heroimage.jpg";
-import bannerimage from "../assets/img/bannerimage.jpg";
-import api from "../api/axios"; // 2. Impor instance axios
-import Footer from "../components/Footer";
-import Navbar from "../components/Navbar";
-import Card from "../components/CardShoes";
+import heroimage from "../../assets/img/heroimage.jpg";
+import bannerimage from "../../assets/img/bannerimage.jpg";
+import api from "../../api/axios"; // 2. Impor instance axios
+import Footer from "../../components/Footer";
+import Navbar from "../../components/Navbar";
+import Card from "../../components/CardShoes";
 import { Link } from "react-router-dom"; // Impor Link jika belum ada
 
 export default function Homepage() {

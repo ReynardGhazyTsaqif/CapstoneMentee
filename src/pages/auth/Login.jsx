@@ -2,9 +2,11 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
 import api from "../../api/axios.jsx";
-import { jwtDecode } from "jwt-decode";
+import { useAuth } from "../../context/AuthContext"; // Impor 'useAuth'
 
 export default function Login() {
+  const { login } = useAuth(); // Ambil fungsi 'login' dari context
+
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -28,24 +30,20 @@ export default function Login() {
     try {
       const response = await api.post("/auth/login", formData);
 
-      // Backend hanya perlu mengirimkan token.
-      const { token } = response.data;
+      // Pastikan respons dari server berisi token dan data user
+      if (response.data.token && response.data.user) {
+        // Panggil fungsi 'login' dari context untuk menyimpan state secara global
+        login(response.data.token, response.data.user);
 
-      // 1. Simpan token di localStorage. Ini adalah satu-satunya hal yang kita simpan.
-      localStorage.setItem("authToken", token);
-
-      // 2. Decode token untuk mendapatkan payload (data pengguna).
-      const decodedUser = jwtDecode(token);
-
-      // Payload dari token sekarang berisi semua info user, termasuk role.
-      // Contoh payload: { id: '123', email: '...', role: 'admin', iat: ..., exp: ... }
-      console.log("Decoded User:", decodedUser);
-
-      // 3. Arahkan berdasarkan role dari hasil decode.
-      if (decodedUser.role === "admin") {
-        navigate("/admin/productform");
+        // Arahkan pengguna berdasarkan role mereka
+        if (response.data.user.role === "admin") {
+          navigate("/admin/productlist"); // Arahkan admin ke daftar produk
+        } else {
+          navigate("/homepage"); // Arahkan user biasa ke homepage
+        }
       } else {
-        navigate("/user/dashboard");
+        // Jika respons tidak sesuai format yang diharapkan
+        setError("Respons dari server tidak valid.");
       }
     } catch (err) {
       const errorMessage =
@@ -58,30 +56,27 @@ export default function Login() {
   };
 
   return (
-    <div className="flex flex-col lg:flex-row w-full min-h-screen bg-gray-950">
-      <div className="hidden lg:block lg:w-1/4 xl:w-1/3 bg-gray-950"></div>
-
-      <div className="bg-white w-full lg:w-3/4 xl:w-2/3 min-h-screen lg:rounded-tl-2xl lg:rounded-bl-2xl">
-        <div className="flex flex-col justify-center items-start px-6 sm:px-12 lg:px-20 pt-12 lg:pt-20">
-          <h1 className="text-black text-2xl sm:text-3xl lg:text-4xl font-semibold mb-4">
+    <div className="bg-gray-950 flex justify-center items-center md:justify-start md:flex-row-reverse w-full min-h-screen">
+      <div className="bg-white w-11/12 md:w-3/4 md:h-screen rounded-2xl md:rounded-tl-2xl md:rounded-bl-2xl md:rounded-tr-none md:rounded-br-none m-2 mr-0">
+        <div className="pt-10 px-6 md:pt-16 md:px-20">
+          <h1 className="text-2xl md:text-3xl text-black font-medium text-center md:text-left">
             Login ke Akun Anda
           </h1>
         </div>
 
-        <div className="px-6 sm:px-12 lg:px-20 max-w-md lg:max-w-none mx-auto lg:mx-0">
-          <form onSubmit={handleLogin} className="space-y-5 mt-6">
-            {/* menampilkan pesan error jika ada */}
+        <div className="p-6 md:px-20">
+          <form onSubmit={handleLogin} className="mt-6 space-y-5">
             {error && (
               <div className="p-3 text-center bg-red-100 text-red-700 rounded-lg">
                 {error}
               </div>
             )}
 
-            {/* Input Email */}
-            <div>
+            {/* Grup Email */}
+            <div className="flex flex-col items-center md:items-start">
               <label
                 htmlFor="email"
-                className="block text-sm sm:text-base font-medium text-gray-700 mb-2"
+                className="mb-1 self-stretch text-center md:text-left"
               >
                 Email
               </label>
@@ -90,83 +85,78 @@ export default function Login() {
                 name="email"
                 type="email"
                 autoComplete="email"
-                placeholder="Masukkan email Anda"
+                placeholder="Masukkan email"
                 value={formData.email}
                 onChange={handleChange}
-                className="w-full border-2 border-gray-300 rounded-xl p-3 focus:outline-none focus:border-gray-600 transition-colors"
+                className="border-slate-200 md:w-3/4 w-5/6 border-2 rounded-2xl p-2 focus:outline-none focus:border-gray-500"
                 required
               />
             </div>
 
-            {/* Input Password */}
-            <div>
+            {/* Grup Password */}
+            <div className="flex flex-col items-center md:items-start">
               <label
                 htmlFor="password"
-                className="block text-sm sm:text-base font-medium text-gray-700 mb-2"
+                className="mb-1 self-stretch text-center md:text-left"
               >
                 Password
               </label>
-              <div className="relative">
+              <div className="relative w-5/6 md:w-3/4">
                 <input
                   id="password"
                   name="password"
                   type={showPassword ? "text" : "password"}
-                  placeholder="Masukkan password Anda"
+                  placeholder="Masukkan password"
                   value={formData.password}
                   onChange={handleChange}
-                  className="w-full border-2 border-gray-300 rounded-xl p-3 pr-12 focus:outline-none focus:border-gray-600 transition-colors"
+                  className="border-slate-200 w-full border-2 rounded-2xl p-2 pr-10 focus:outline-none focus:border-gray-500"
                   required
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 flex items-center pr-4 text-gray-500 hover:text-gray-800"
+                  className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500"
                 >
                   {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
               </div>
             </div>
 
-            {/* Opsi "Ingat Saya" & "Lupa Password" */}
-            <div className="flex items-center justify-between">
+            {/* Checkbox "Ingat Saya" & Link "Lupa Password" */}
+            <div className="flex items-center justify-between md:w-3/4 w-5/6 mx-auto md:mx-0">
               <div className="flex items-center">
                 <input
                   id="remember-me"
-                  name="remember-me"
                   type="checkbox"
                   checked={rememberMe}
                   onChange={(e) => setRememberMe(e.target.checked)}
-                  className="h-4 w-4 rounded border-gray-300 text-black focus:ring-gray-700"
+                  className="mr-2 h-4 w-4 rounded border-gray-300 text-black focus:ring-gray-700"
                 />
-                <label
-                  htmlFor="remember-me"
-                  className="ml-2 block text-sm text-gray-900"
-                >
+                <label htmlFor="remember-me" className="text-sm">
                   Ingat saya
                 </label>
               </div>
               <Link
-                to="/forgotpassword" // Menggunakan path yang lebih umum
-                className="text-sm font-semibold text-black hover:underline"
+                to="/forgotpassword"
+                className="font-semibold text-sm text-black hover:underline"
               >
                 Lupa Password?
               </Link>
             </div>
 
             {/* Tombol Submit */}
-            <div className="pt-4">
+            <div className="pt-4 flex justify-center md:justify-start">
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-black text-white rounded-xl p-3 font-semibold hover:bg-gray-800 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+                className="bg-black text-white md:w-3/4 w-5/6 rounded-2xl p-2.5 font-semibold cursor-pointer hover:bg-gray-800 transition-colors disabled:bg-gray-400"
               >
                 {loading ? "Memproses..." : "Login"}
               </button>
             </div>
           </form>
 
-          {/* Link ke halaman Register */}
-          <p className="text-center text-sm text-gray-600 mt-6">
+          <p className="pr-10 text-sm text-center md:text-start mt-4">
             Tidak punya akun?{" "}
             <Link
               to="/register"

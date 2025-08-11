@@ -16,7 +16,7 @@ export default function DynamicBreadcrumb() {
   let currentLink = "";
   const crumbs = [
     // Tambahkan "Home" sebagai crumb pertama
-    { label: "Home", path: "/" },
+    { label: "Home", path: "/homepage" },
     // Buat crumb untuk setiap segmen path
     ...pathnames.map((name) => {
       currentLink += `/${name}`;

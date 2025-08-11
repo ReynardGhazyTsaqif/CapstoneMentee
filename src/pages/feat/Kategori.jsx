@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import heroimage from "../assets/img/heroimage.jpg";
+import heroimage from "../../assets/img/heroimage.jpg";
 import FilterSidebar from "../../components/FilterSidebar";
 import SortingBar from "../../components/SortingBar";
 import Card from "../../components/CardShoes";

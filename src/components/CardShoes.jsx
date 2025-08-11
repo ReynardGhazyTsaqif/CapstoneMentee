@@ -1,49 +1,55 @@
-import React, { useState } from "react";
+import React from "react";
+import { Link } from "react-router-dom";
 
-export default function Card({ imageUrl, name, description, price, rating }) {
-  // State untuk melacak apakah item ada di wishlist atau tidak
-
-  const [isWishlisted, setIsWishlisted] = useState(false);
-
-  const handleWishlistToggle = (e) => {
-    // Mencegah navigasi jika kartu dibungkus oleh <Link>
+export default function Card({
+  imageUrl,
+  name,
+  description,
+  price,
+  rating,
+  isWishlisted,
+  onWishlistToggle,
+  linkTo,
+}) {
+  const handleWishlistClick = (e) => {
+    console.log("Tombol HATI di dalam Card diklik!");
+    // Mencegah <Link> di parent agar tidak pindah halaman
     e.preventDefault();
+    // Menghentikan event agar tidak "naik" ke parent
     e.stopPropagation();
-    setIsWishlisted(!isWishlisted);
-    console.log(
-      `Produk ${name} ${
-        !isWishlisted ? "ditambahkan ke" : "dihapus dari"
-      } wishlist.`
-    );
+
+    // Panggil fungsi yang diberikan oleh parent
+    if (onWishlistToggle) {
+      onWishlistToggle();
+    }
   };
 
-  return (
-    <div className="bg-white shadow-md rounded-lg overflow-hidden h-full flex flex-col group ">
+  // Mendefinisikan konten kartu sebagai variabel
+  const cardContent = (
+    <div className="bg-white shadow-md rounded-lg overflow-hidden h-full flex flex-col group relative z-10">
       {/* --- Bagian Gambar --- */}
-      {/* 1. Tambahkan 'relative' pada pembungkus gambar */}
       <div className="w-full h-48 bg-gray-200 relative">
         <img
           src={imageUrl || "https://placehold.co/400x300/e2e8f0/333?text=Image"}
           alt={name || "Product Image"}
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
         />
 
-        {/* 2. Tambahkan tombol ikon hati di sini */}
+        {/* Tombol Ikon Hati */}
         <button
-          onClick={handleWishlistToggle}
-          className="absolute top-3 left-3 z-10 bg-white/80 backdrop-blur-sm rounded-full p-1.5 hover:bg-white transition-colors"
+          onClick={handleWishlistClick}
+          className="absolute top-3 left-3 z-20 bg-white/80 backdrop-blur-sm rounded-full p-1.5 hover:bg-white transition-colors"
           aria-label="Toggle Wishlist"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 24 24"
             strokeWidth="1.5"
-            className={`w-5 h-5 transition-all duration-200
-              ${
-                isWishlisted
-                  ? "fill-red-500 stroke-red-500"
-                  : "fill-none stroke-current"
-              }`}
+            className={`w-5 h-5 transition-all duration-200 ${
+              isWishlisted
+                ? "fill-red-500 stroke-red-500"
+                : "fill-none stroke-current"
+            }`}
           >
             <path
               strokeLinecap="round"
@@ -58,7 +64,7 @@ export default function Card({ imageUrl, name, description, price, rating }) {
       <div className="p-4 flex flex-col flex-grow">
         <div className="flex-grow">
           <div className="flex justify-between items-start gap-3">
-            <h2 className="font-bold text-lg mb-1 group-hover:text-gray-600 transition-colors">
+            <h2 className="font-bold text-lg mb-1 group-hover:text-blue-600 transition-colors">
               {name || "Shoes Name"}
             </h2>
             <div className="text-sm text-yellow-500 flex items-center gap-1 flex-shrink-0">
@@ -81,4 +87,12 @@ export default function Card({ imageUrl, name, description, price, rating }) {
       </div>
     </div>
   );
+
+  // Jika ada prop 'linkTo', bungkus konten dengan Link
+  if (linkTo) {
+    return <Link to={linkTo}>{cardContent}</Link>;
+  }
+
+  // Jika tidak, tampilkan konten saja
+  return cardContent;
 }

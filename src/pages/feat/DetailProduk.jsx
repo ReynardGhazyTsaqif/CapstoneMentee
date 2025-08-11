@@ -37,7 +37,7 @@ export default function DetailProduk() {
         }
 
         setProduct(fetchedProduct);
-
+        setIsWishlisted(fetchedProduct.isWishlist || false);
         // Atur gambar aktif pertama kali
         if (
           fetchedProduct.imageGallery &&
