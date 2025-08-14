@@ -1,16 +1,24 @@
-// src/components/ProtectedRoute.jsx
 import React from "react";
 import { useAuth } from "../context/AuthContext";
 import { Navigate, Outlet } from "react-router-dom";
 
+// Komponen sederhana untuk tampilan loading
+const FullPageLoader = () => (
+  <div className="flex items-center justify-center min-h-screen">
+    <div className="text-lg font-semibold">Loading...</div>
+  </div>
+);
+
 export default function ProtectedRoute() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
+
+  if (isLoading) {
+    return <FullPageLoader />;
+  }
 
   if (!isAuthenticated) {
-    // Jika tidak login, lempar ke halaman login
     return <Navigate to="/login" replace />;
   }
 
-  // Jika sudah login, tampilkan halaman yang diminta
   return <Outlet />;
 }

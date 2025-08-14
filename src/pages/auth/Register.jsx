@@ -37,7 +37,7 @@ export default function Register() {
     try {
       await api.post("/auth/register", formData);
       setSuccess(true);
-      setTimeout(() => navigate("/"), 2000);
+      setTimeout(() => navigate("/login"), 2000);
     } catch (err) {
       console.error("Full error response:", err.response);
       const errorMessage =
@@ -192,7 +192,10 @@ export default function Register() {
             </div>
             <p className="pr-10 text-sm text-center md:text-start mt-4">
               Sudah Punya Akun ?{" "}
-              <Link to="/" className="font-semibold text-black hover:underline">
+              <Link
+                to="/login"
+                className="font-semibold text-black hover:underline"
+              >
                 Login Disini
               </Link>
             </p>

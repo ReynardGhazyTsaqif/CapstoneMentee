@@ -108,7 +108,7 @@ export default function Homepage() {
                     );
 
                     return (
-                      <Link key={product.id} to={`/produk/${product.id}`}>
+                      <Link key={product.id} to={`/kategori/${product.id}`}>
                         <Card
                           imageUrl={cleanImageUrl}
                           name={product.name}

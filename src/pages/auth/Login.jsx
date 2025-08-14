@@ -2,10 +2,10 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
 import api from "../../api/axios.jsx";
-import { useAuth } from "../../context/AuthContext"; // Impor 'useAuth'
+import { useAuth } from "../../context/AuthContext";
 
 export default function Login() {
-  const { login } = useAuth(); // Ambil fungsi 'login' dari context
+  const { login } = useAuth();
 
   const [formData, setFormData] = useState({
     email: "",
@@ -30,7 +30,7 @@ export default function Login() {
     try {
       const response = await api.post("/auth/login", formData);
 
-      // Pastikan respons dari server berisi token dan data user
+      // respons dari server berupa token dan data user
       if (response.data.token && response.data.user) {
         // Panggil fungsi 'login' dari context untuk menyimpan state secara global
         login(response.data.token, response.data.user);
@@ -39,10 +39,9 @@ export default function Login() {
         if (response.data.user.role === "admin") {
           navigate("/admin/productlist"); // Arahkan admin ke daftar produk
         } else {
-          navigate("/homepage"); // Arahkan user biasa ke homepage
+          navigate("/"); // Arahkan user biasa ke homepage
         }
       } else {
-        // Jika respons tidak sesuai format yang diharapkan
         setError("Respons dari server tidak valid.");
       }
     } catch (err) {

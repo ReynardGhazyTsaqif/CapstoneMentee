@@ -19,13 +19,31 @@ export default function Kategori() {
     totalItems: 0,
   });
 
-  const availableCategories = ["Sneakers", "Formal", "Running", "Hiking"];
+  const [availableCategories, setAvailableCategories] = useState([]);
 
   const [filters, setFilters] = useState({
     categories: [],
     rating: null,
     price: { min: 0, max: 10000000 },
   });
+
+  // 2. Buat useEffect baru untuk mengambil daftar kategori
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        // Panggil endpoint baru untuk kategori/tipe
+        const response = await api.get("/products/types");
+
+        // Asumsikan responsnya adalah array of strings: ["Sneakers", "Boots", ...]
+        setAvailableCategories(response.data);
+      } catch (err) {
+        console.error("Gagal mengambil data kategori:", err);
+        // Jika gagal, bisa set default agar filter tidak kosong
+        setAvailableCategories([]);
+      }
+    };
+    fetchCategories();
+  }, []); // <-- Array kosong agar hanya berjalan sekali
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -34,7 +52,7 @@ export default function Kategori() {
 
       const params = new URLSearchParams();
       if (filters.categories.length > 0) {
-        filters.categories.forEach((cat) => params.append("category", cat));
+        filters.categories.forEach((cat) => params.append("tipe", cat));
       }
       if (filters.rating) {
         params.append("rating_gte", filters.rating);
@@ -45,7 +63,6 @@ export default function Kategori() {
       try {
         const response = await api.get(`/products?${params.toString()}`);
 
-        // PERBAIKAN 1: Ambil data dari properti yang benar
         setProducts(response.data.products);
         setPagination({
           currentPage: response.data.currentPage,
@@ -85,14 +102,11 @@ export default function Kategori() {
         </div>
       );
     }
+
     return products.map((product) => {
-      // PERBAIKAN 2: Proses URL gambar
       const imageUrl =
-        product.images && product.images.length > 0
-          ? `${
-              import.meta.env.VITE_API_BASE_URL
-            }${product.images[0].image_url.replace(/\\/g, "/")}`
-          : "https://placehold.co/400x300/e2e8f0/333?text=No+Image";
+        product.image ||
+        "https://placehold.co/400x300/e2e8f0/333?text=No+Image";
 
       return (
         <Link key={product.id} to={`/kategori/${product.id}`}>
@@ -100,7 +114,6 @@ export default function Kategori() {
             imageUrl={imageUrl}
             name={product.name}
             description={product.description}
-            // PERBAIKAN 3: Beri nilai default untuk rating
             rating={product.rating || "N/A"}
             price={`Rp${product.price.toLocaleString("id-ID")}`}
           />
@@ -108,7 +121,6 @@ export default function Kategori() {
       );
     });
   };
-
   return (
     <>
       <div className="bg-gray-100 w-full min-h-screen flex flex-col">

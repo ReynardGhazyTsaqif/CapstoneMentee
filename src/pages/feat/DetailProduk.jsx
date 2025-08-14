@@ -4,9 +4,11 @@ import DynamicBreadcrumb from "../../components/DynamicBreadcrumb";
 import Card from "../../components/CardShoes";
 import api from "../../api/axios";
 import { Heart } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export default function DetailProduk() {
   const { productId } = useParams();
+  const navigate = useNavigate();
 
   const [product, setProduct] = useState(null);
   const [recommendations, setRecommendations] = useState([]);
@@ -25,10 +27,8 @@ export default function DetailProduk() {
       setLoading(true);
       setError(null);
       try {
-        // PERBAIKAN 1: Panggil endpoint detail produk yang benar
         const response = await api.get(`/products/${productId}`);
 
-        // PERBAIKAN 2: Ubah string 'specifications' menjadi objek JSON
         const fetchedProduct = response.data;
         if (typeof fetchedProduct.specifications === "string") {
           fetchedProduct.specifications = JSON.parse(
@@ -38,7 +38,7 @@ export default function DetailProduk() {
 
         setProduct(fetchedProduct);
         setIsWishlisted(fetchedProduct.isWishlist || false);
-        // Atur gambar aktif pertama kali
+
         if (
           fetchedProduct.imageGallery &&
           fetchedProduct.imageGallery.length > 0
@@ -53,21 +53,18 @@ export default function DetailProduk() {
       }
     };
 
-    // (Opsional) Fungsi terpisah untuk mengambil rekomendasi
     const fetchRecommendations = async () => {
       try {
-        // Asumsikan endpoint ini ada
         const response = await api.get(`/products/${productId}/rekomendasi`);
         setRecommendations(response.data);
       } catch (err) {
         console.error("Gagal mengambil rekomendasi:", err);
-        // Tidak perlu set error utama jika hanya rekomendasi yang gagal
       }
     };
 
     fetchProductData();
     fetchRecommendations();
-  }, [productId]); // Efek ini akan berjalan lagi jika productId berubah
+  }, [productId]);
 
   if (loading) return <div className="text-center py-20">Loading...</div>;
   if (error)
@@ -75,36 +72,70 @@ export default function DetailProduk() {
   if (!product)
     return <div className="text-center py-20">Produk tidak ditemukan!</div>;
 
-  const handleAddToCart = () => {
+  // 3. Modifikasi fungsi handleAddToCart
+  const handleAddToCart = async () => {
     if (!selectedSize) {
       alert("Silakan pilih ukuran terlebih dahulu!");
       return;
     }
-    console.log(
-      `Menambahkan ${quantity} buah ${product.name} ukuran ${selectedSize} ke keranjang.`
-    );
-  };
 
+    try {
+      // 1. Cari varian produk berdasarkan ukuran yang dipilih
+      const selectedVariant = product.sizes.find(
+        (s) => s.size === selectedSize
+      );
+
+      // Pengaman jika varian tidak ditemukan
+      if (!selectedVariant) {
+        alert("Varian produk tidak ditemukan.");
+        return;
+      }
+
+      // 2. Siapkan data sesuai format yang diminta API
+      const cartItem = {
+        productVariantId: selectedVariant.variantId,
+        quantity: quantity,
+      };
+
+      // 3. Panggil endpoint POST /cart dengan data yang benar
+      await api.post("/cart", cartItem);
+
+      alert(`${product.name} berhasil ditambahkan ke keranjang!`);
+      navigate("/shopcart");
+    } catch (err) {
+      console.error("Gagal menambahkan ke keranjang:", err);
+      const errorMessage =
+        err.response?.data?.message || "Gagal menambahkan item ke keranjang.";
+
+      if (err.response && err.response.status === 401) {
+        alert("Anda harus login untuk menambahkan item ke keranjang.");
+        navigate("/login");
+      } else {
+        alert(errorMessage);
+      }
+    }
+  };
   const handleWishlistToggle = async () => {
-    // Simpan state sebelum diubah, untuk jaga-jaga jika API gagal
+    // menyimpan state sebelum diubah
     const originalWishlistStatus = isWishlisted;
 
-    // Optimistic Update: Langsung ubah UI agar terasa cepat
     setIsWishlisted(!originalWishlistStatus);
 
     try {
       if (!originalWishlistStatus) {
-        // Jika sebelumnya tidak ada di wishlist, maka TAMBAHKAN
+        //menambahkan wishlist
         await api.post("/wishlist", { productId: product.id });
       } else {
-        // Jika sebelumnya sudah ada di wishlist, maka HAPUS
+        //menghapus wishlist
         await api.delete(`/wishlist/${product.id}`);
       }
     } catch (err) {
       console.error("Gagal update wishlist:", err);
-      // Jika API gagal, kembalikan UI ke state semula
+
       setIsWishlisted(originalWishlistStatus);
-      alert("Gagal memperbarui wishlist. Silakan coba lagi.");
+      const errorMessage =
+        err.response?.data?.message || "Gagal memperbarui wishlist.";
+      alert(errorMessage);
     }
   };
 
@@ -115,80 +146,110 @@ export default function DetailProduk() {
           <DynamicBreadcrumb />
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-          {/* KOLOM KIRI: GALERI GAMBAR */}
-          <div className="flex flex-col-reverse sm:flex-row gap-4">
-            <div className="flex sm:flex-col gap-2 justify-center">
+        {/* --- BAGIAN UTAMA PRODUK --- */}
+
+        <div className="flex flex-col lg:flex-row gap-8">
+          {/* --- KOLOM KIRI: GALERI GAMBAR --- */}
+
+          <div className="w-full lg:w-1/2 flex flex-col-reverse sm:flex-row gap-4">
+            <div className="flex sm:flex-col gap-3 justify-center">
               {product.imageGallery.map((imgUrl, index) => (
-                <img
+                <div
                   key={index}
-                  src={imgUrl}
-                  alt={`Thumbnail ${index + 1}`}
                   onClick={() => setActiveImage(imgUrl)}
-                  className={`w-16 h-16 object-cover rounded-md cursor-pointer border-2 ${
+                  className={`p-1 rounded-lg cursor-pointer border-2 ${
                     activeImage === imgUrl
                       ? "border-black"
                       : "border-transparent"
                   }`}
-                />
+                >
+                  <img
+                    src={imgUrl}
+                    alt={`Thumbnail ${index + 1}`}
+                    className="w-20 h-20 object-cover rounded-md"
+                  />
+                </div>
               ))}
             </div>
-            <div className="flex-1">
+            <div className="flex-1 bg-gray-100 rounded-lg flex items-center justify-center p-4">
               <img
                 src={activeImage}
                 alt={product.name}
-                className="w-full h-auto object-cover rounded-lg"
+                className="w-full max-w-sm h-auto object-contain"
               />
             </div>
           </div>
 
-          {/* KOLOM KANAN: DETAIL INFO PRODUK */}
-          <div className="flex flex-col">
-            <h2 className="text-sm uppercase text-gray-500">{product.brand}</h2>
-            <h1 className="text-3xl font-bold text-gray-900 mt-1">
-              {product.name}
-            </h1>
-            <div className="flex items-center mt-3 text-sm">
-              <span>⭐ {product.rating.toFixed(1)}</span>
+          {/* --- KOLOM KANAN: DETAIL INFO PRODUK --- */}
+          {/* Diberi lebar, background, dan padding */}
+          <div className="w-full lg:w-1/2 bg-gray-100 rounded-lg p-8">
+            <div className="flex justify-between items-start">
+              <div>
+                <h2 className="text-sm uppercase text-gray-600">
+                  {product.brand}
+                </h2>
+                <h1 className="text-2xl font-bold text-gray-900 mt-1">
+                  {product.name}
+                </h1>
+              </div>
+              {/* Ikon Hati dipindah ke sini */}
+              <button
+                onClick={handleWishlistToggle}
+                aria-label="Toggle Wishlist"
+              >
+                <Heart
+                  className={`w-7 h-7 transition-colors ${
+                    isWishlisted
+                      ? "fill-red-500 stroke-red-500"
+                      : "text-gray-500 hover:text-red-500"
+                  }`}
+                />
+              </button>
+            </div>
+
+            <div className="flex items-center mt-3 text-sm text-gray-500">
+              <span>({product.rating.toFixed(1)})</span>
               <span className="mx-2 text-gray-300">|</span>
               <span>{product.reviewCount} Penilaian</span>
               <span className="mx-2 text-gray-300">|</span>
               <span>{product.sold} Terjual</span>
             </div>
-            <p className="text-4xl font-light text-gray-900 my-6">
-              Rp{product.price.toLocaleString("id-ID")}
+
+            <p className="text-4xl font-bold text-gray-900 my-6">
+              Rp {product.price}
             </p>
 
-            <div className="mb-6">
-              <h3 className="text-sm font-semibold mb-3">Pilih Ukuran</h3>
-              <div className="flex flex-wrap gap-2">
-                {product.sizes.map((s) => (
-                  <button
-                    key={s.size}
-                    onClick={() => setSelectedSize(s.size)}
-                    disabled={s.stock === 0}
-                    className={`px-4 py-2 border rounded-md text-sm transition-colors ${
-                      selectedSize === s.size
-                        ? "bg-black text-white"
-                        : "bg-white text-black"
-                    } ${
-                      s.stock === 0
-                        ? "bg-gray-100 text-gray-400 cursor-not-allowed line-through"
-                        : "hover:bg-gray-100"
-                    }`}
-                  >
-                    {s.size}
-                  </button>
-                ))}
+            {product.sizes && product.sizes.length > 0 && (
+              <div className="mb-6">
+                <h3 className="text-sm font-semibold mb-3">Pilih Ukuran</h3>
+                <div className="flex flex-wrap gap-2">
+                  {product.sizes.map((s) => (
+                    <button
+                      key={s.size}
+                      onClick={() => setSelectedSize(s.size)}
+                      disabled={s.stock === 0}
+                      className={`px-4 py-2 border rounded-md text-sm transition-colors ${
+                        selectedSize === s.size
+                          ? "bg-black text-white border-black"
+                          : "bg-white text-black border-gray-300"
+                      } ${
+                        s.stock === 0
+                          ? "bg-gray-200 text-gray-400 cursor-not-allowed line-through"
+                          : "hover:bg-gray-200"
+                      }`}
+                    >
+                      {s.size}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
 
-            <div className="flex items-center space-x-4 mb-6">
-              <p>Jumlah:</p>
-              <div className="flex items-center border rounded">
+            <div className="flex items-center space-x-4 mb-8">
+              <div className="flex items-center border border-gray-300 rounded-full">
                 <button
                   onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                  className="px-3 py-1"
+                  className="px-4 py-2 font-bold"
                 >
                   -
                 </button>
@@ -196,40 +257,49 @@ export default function DetailProduk() {
                   type="text"
                   value={quantity}
                   readOnly
-                  className="w-12 text-center border-l border-r"
+                  className="w-12 text-center bg-transparent"
                 />
                 <button
                   onClick={() => setQuantity(quantity + 1)}
-                  className="px-3 py-1"
+                  className="px-4 py-2 font-bold"
                 >
                   +
                 </button>
               </div>
+              <p className="text-sm text-gray-500">
+                Tersedia {product.stock} buah
+              </p>
             </div>
 
-            <div className="flex items-center gap-4 mt-8">
-              {/* Tombol Wishlist */}
+            <div className="flex items-center gap-4">
+              {/* Tombol Wishlist baru */}
               <button
                 onClick={handleWishlistToggle}
-                className="p-3 border-2 border-gray-300 rounded-lg hover:bg-gray-100 transition-colors"
-                aria-label="Toggle Wishlist"
+                className="w-1/2 border border-black text-black py-3 rounded-full font-semibold hover:bg-gray-200 transition-colors flex items-center justify-center gap-2"
               >
-                <Heart
-                  className={`w-6 h-6 transition-colors ${
-                    isWishlisted
-                      ? "fill-red-500 stroke-red-500"
-                      : "text-gray-800"
-                  }`}
-                />
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  fill="currentColor"
+                  viewBox="0 0 16 16"
+                >
+                  <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z" />
+                </svg>
+                Wishlist
               </button>
-
               {/* Tombol Tambah ke Keranjang */}
               <button
                 onClick={handleAddToCart}
-                className="w-full bg-black text-white py-3 rounded-lg font-semibold hover:bg-gray-800 transition-colors"
+                className="w-1/2 bg-black text-white py-3 rounded-full font-semibold hover:bg-gray-800 transition-colors"
               >
                 Tambah ke Keranjang
               </button>
+            </div>
+
+            <div className="mt-6 border-t pt-4 text-sm text-gray-600 space-y-2">
+              <p>Garansi Jam Tangan: 1 Bulan</p>
+              <p>Akan dikirim: 20 Agustus 2025</p>
             </div>
           </div>
         </div>

@@ -15,11 +15,9 @@ export default function ResetPassword() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Ambil data dari state navigasi
   const email = location.state?.email;
-  const token = location.state?.token; // Nama 'token' sudah konsisten
+  const token = location.state?.token;
 
-  // PERBAIKAN 1: Dependency array sudah benar
   useEffect(() => {
     if (!email || !token) {
       navigate("/forgotpassword");
@@ -39,20 +37,17 @@ export default function ResetPassword() {
     }
 
     try {
-      // 1. Siapkan data untuk BODY (hanya password)
       const dataToSend = {
         password: newPassword,
         confirmPassword: confirmPassword,
       };
 
-      // 2. Siapkan konfigurasi untuk menyertakan HEADER
       const config = {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       };
 
-      // 3. Panggil API dengan tiga argumen: URL, data body, dan config (untuk header)
       await api.put("/auth/reset-password", dataToSend, config);
 
       setSuccess(true);
@@ -69,7 +64,6 @@ export default function ResetPassword() {
   };
 
   return (
-    // ... JSX Anda (tidak perlu diubah) ...
     <div className="flex flex-col lg:flex-row w-full min-h-screen bg-gray-950">
       <div className="hidden lg:block lg:w-1/4 xl:w-1/3 bg-gray-950"></div>
       <div className="bg-white w-full lg:w-3/4 xl:w-2/3 min-h-screen lg:rounded-tl-2xl lg:rounded-bl-2xl">

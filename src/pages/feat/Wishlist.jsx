@@ -18,6 +18,7 @@ export default function Wishlist() {
       try {
         // Panggil endpoint untuk mengambil data wishlist pengguna yang sedang login
         const response = await api.get("/wishlist");
+
         setWishlistItems(response.data); // Asumsikan API mengembalikan array produk
       } catch (err) {
         console.error("Gagal mengambil data wishlist:", err);
@@ -42,7 +43,6 @@ export default function Wishlist() {
     if (error) {
       return <p className="text-center py-10 text-red-500">{error}</p>;
     }
-    // 3. Tambahkan kondisi jika wishlist kosong
     if (wishlistItems.length === 0) {
       return (
         <div className="text-center col-span-full py-10">
@@ -57,20 +57,37 @@ export default function Wishlist() {
         </div>
       );
     }
-    // Jika ada isinya, tampilkan produk
-    return wishlistItems.map((product) => (
-      <Link key={product.id} to={`/produk/${product.id}`}>
-        <Card
-          // imageUrl={/* Proses URL gambar jika perlu */}
-          name={product.name}
-          description={product.description}
-          rating={product.rating || "N/A"}
-          price={`Rp${product.price.toLocaleString("id-ID")}`}
-        />
-      </Link>
-    ));
-  };
+    return wishlistItems.map((item) => {
+      // ======================================================
+      // PERBAIKAN DI SINI: Ambil data dari 'item.Product' (P besar)
+      // ======================================================
+      const productData = item.Product;
 
+      // Pengaman jika data produk tidak ada
+      if (!productData) return null;
+
+      // Proses URL gambar dari data produk yang benar
+      const imageUrl =
+        productData.images && productData.images.length > 0
+          ? `${
+              import.meta.env.VITE_API_BASE_URL
+            }/${productData.images[0].image_url.replace(/\\/g, "/")}`
+          : "https://placehold.co/400x300/e2e8f0/333?text=No+Image";
+
+      return (
+        // Gunakan item.id untuk key karena ini unik untuk entri wishlist
+        <Link key={item.id} to={`/kategori/${productData.id}`}>
+          <Card
+            imageUrl={imageUrl}
+            name={productData.name}
+            description={productData.description || ""} // Beri fallback jika deskripsi tidak ada
+            rating={productData.rating || "N/A"}
+            price={`Rp${productData.price.toLocaleString("id-ID")}`}
+          />
+        </Link>
+      );
+    });
+  };
   return (
     <>
       <div className="flex flex-col">

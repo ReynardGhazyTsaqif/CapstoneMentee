@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import SearchField from "./SearchField";
 import MenuIcons from "./menuicons";
 
@@ -8,7 +9,9 @@ export default function Navbar() {
     <nav className="flex justify-between items-center w-full">
       {/* Bagian Kiri: Nama Brand */}
       <div className="hidden md:block">
-        <h1 className="text-white text-4xl font-bold">SHOEZY</h1>
+        <Link to={"/homepage"}>
+          <h1 className="text-white text-4xl font-bold">SHOEZY</h1>
+        </Link>
       </div>
 
       {/* Bagian Tengah: SearchField */}

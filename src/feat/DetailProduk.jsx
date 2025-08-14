@@ -25,10 +25,8 @@ export default function DetailProduk() {
       setLoading(true);
       setError(null);
       try {
-        // PERBAIKAN 1: Panggil endpoint detail produk yang benar
         const response = await api.get(`/products/${productId}`);
 
-        // PERBAIKAN 2: Ubah string 'specifications' menjadi objek JSON
         const fetchedProduct = response.data;
         if (typeof fetchedProduct.specifications === "string") {
           fetchedProduct.specifications = JSON.parse(
@@ -53,21 +51,18 @@ export default function DetailProduk() {
       }
     };
 
-    // (Opsional) Fungsi terpisah untuk mengambil rekomendasi
     const fetchRecommendations = async () => {
       try {
-        // Asumsikan endpoint ini ada
         const response = await api.get(`/products/${productId}/rekomendasi`);
         setRecommendations(response.data);
       } catch (err) {
         console.error("Gagal mengambil rekomendasi:", err);
-        // Tidak perlu set error utama jika hanya rekomendasi yang gagal
       }
     };
 
     fetchProductData();
     fetchRecommendations();
-  }, [productId]); // Efek ini akan berjalan lagi jika productId berubah
+  }, [productId]); // Efek yang akan berjalan lagi jika productId berubah
 
   if (loading) return <div className="text-center py-20">Loading...</div>;
   if (error)

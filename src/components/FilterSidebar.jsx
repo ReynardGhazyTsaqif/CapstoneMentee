@@ -94,15 +94,15 @@ const FilterSidebar = ({ categories = [], filters, onFilterChange }) => {
           <h2 className="text-lg font-semibold text-gray-800 mb-4">Kategori</h2>
           <ul className="space-y-3">
             {categories.map((category) => (
-              <li key={category}>
+              <li key={category.id}>
                 <label className="flex items-center cursor-pointer">
                   <input
                     type="checkbox"
                     className="h-5 w-5 rounded border-gray-400 text-black focus:ring-black focus:ring-offset-0"
-                    checked={filters.categories.includes(category)}
-                    onChange={() => handleCategoryChange(category)}
+                    checked={filters.categories.includes(category.name)}
+                    onChange={() => handleCategoryChange(category.name)}
                   />
-                  <span className="ml-3 text-gray-700">{category}</span>
+                  <span className="ml-3 text-gray-700">{category.name}</span>
                 </label>
               </li>
             ))}

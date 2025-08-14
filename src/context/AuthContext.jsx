@@ -1,12 +1,28 @@
-import React, { createContext, useState, useContext } from "react";
+import React, { createContext, useState, useContext, useEffect } from "react";
+import api from "../api/axios";
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
-  const [token, setToken] = useState(localStorage.getItem("authToken"));
+  const [token, setToken] = useState(() => localStorage.getItem("authToken"));
+  const [isLoading, setIsLoading] = useState(true);
+  useEffect(() => {
+    const fetchUser = async () => {
+      if (token) {
+        try {
+          const response = await api.get("/users/profile");
+          setUser(response.data);
+        } catch (error) {
+          console.error("Gagal memvalidasi token, logout...", error);
+          logout(); // Jika token tidak valid, logout
+        }
+      }
 
-  // Di sini Anda bisa menambahkan fungsi untuk fetch data user berdasarkan token
+      setIsLoading(false);
+    };
+    fetchUser();
+  }, [token]);
 
   const login = (newToken, userData) => {
     localStorage.setItem("authToken", newToken);
@@ -22,11 +38,11 @@ export function AuthProvider({ children }) {
 
   const isAuthenticated = !!token;
 
+  const value = { isAuthenticated, user, isLoading, login, logout };
+
   return (
-    <AuthContext.Provider
-      value={{ isAuthenticated, user, token, login, logout }}
-    >
-      {children}
+    <AuthContext.Provider value={value}>
+      {!isLoading && children}
     </AuthContext.Provider>
   );
 }
