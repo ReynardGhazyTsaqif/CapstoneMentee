@@ -1,14 +1,21 @@
 import Sidebar from "./Sidebar";
 import Navbar from "./navbar";
+import Footer from "./Footer";
 
 export default function AdminLayout({ children }) {
   return (
-    <div className="flex min-h-screen bg-gray-50">
-      <Sidebar />
-      <div className="flex-1 flex flex-col">
-        <Navbar />
-        <div>{children}</div>
+    <div className="flex flex-col min-h-screen bg-gray-50">
+      {/* Bagian Utama dengan Sidebar + Konten */}
+      <div className="flex flex-1">
+        <Sidebar />
+        <div className="flex-1 flex flex-col">
+          <Navbar />
+          <div className="flex-1 p-4">{children}</div>
+        </div>
       </div>
+
+      {/* Footer Full Lebar */}
+      <Footer />
     </div>
   );
 }

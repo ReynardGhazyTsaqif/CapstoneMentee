@@ -34,7 +34,7 @@ function Login() {
 
       // Redirect berdasarkan role
       if (user.role === "admin" || user.email === "admin@example.com") {
-        navigate("/admin/productform");
+        navigate("/admin/dashboard");
       } else {
         navigate("/user/dashboard");
       }
