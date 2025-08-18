@@ -1,64 +1,74 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-
-import { Link } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
-import axios from "axios";
+import api from "../../api/axios.jsx";
+import { useAuth } from "../../context/AuthContext";
 
 function Login() {
-  const [showPassword, setShowPassword] = useState(false);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [rememberMe, setRememberMe] = useState(false);
+  const { login } = useAuth();
 
-  const togglePassword = () => setShowPassword((prev) => !prev);
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  });
+  const [rememberMe, setRememberMe] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [showPassword, setShowPassword] = useState(false);
 
   const navigate = useNavigate();
 
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const togglePassword = () => {
+    setShowPassword((prev) => !prev);
+  };
+
   const handleLogin = async (e) => {
     e.preventDefault();
+    setLoading(true);
+    setError(null);
 
     try {
-      const response = await axios.post(
-        `${import.meta.env.VITE_API_URL}/auth/login`,
-        { email, password },
-        { withCredentials: true }
-      );
+      const response = await api.post("/auth/login", formData);
 
-      const { message, user } = response.data;
+      if (response.data.token && response.data.user) {
+        login(response.data.token, response.data.user);
 
-      alert(message);
-
-      // Simpan user jika mau (opsional)
-      localStorage.setItem("user", JSON.stringify(user));
-
-      // Redirect berdasarkan role
-      if (user.role === "admin" || user.email === "admin@example.com") {
-        navigate("/admin/dashboard");
+        if (response.data.user.role === "admin") {
+          navigate("/admin/productlist");
+        } else {
+          navigate("/");
+        }
       } else {
-        navigate("/user/dashboard");
+        setError("Respons dari server tidak valid.");
       }
-    } catch (error) {
-      const msg =
-        error.response?.data?.message || "Terjadi kesalahan saat login";
-      alert(msg);
+    } catch (err) {
+      const errorMessage =
+        err.response?.data?.message ||
+        "Email atau password salah. Silakan coba lagi.";
+      setError(errorMessage);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div className="flex flex-col lg:flex-row w-full min-h-screen bg-gray-950 font-sans">
-      {/* Left side - Dark background (hidden on mobile) */}
+      {/* Left side */}
       <div className="hidden lg:block lg:w-1/4 xl:w-1/3 bg-gray-950"></div>
 
       {/* Right side - Login form */}
       <div className="bg-white w-full lg:w-3/4 xl:w-2/3 min-h-screen lg:rounded-tl-2xl lg:rounded-bl-2xl">
         <div className="flex justify-center lg:justify-start items-center pt-8 lg:pt-20">
-          <h2 className="text-black text-2xl sm:text-3xl lg:text-4xl xl:text-4xl mb-6 font-medium lg:pl-20">
+          <h2 className="text-black text-2xl sm:text-3xl lg:text-4xl font-medium lg:pl-20">
             Login
           </h2>
         </div>
 
-        <div className="px-6 sm:px-12 lg:px-20 max-w-md lg:max-w-none mx-auto lg:mx-0">
+        <div className="px-6 sm:px-12 lg:px-20 max-w-md mx-auto lg:mx-0">
           <form onSubmit={handleLogin} className="space-y-4">
             {/* Email */}
             <div>
@@ -67,9 +77,10 @@ function Login() {
               </label>
               <input
                 type="email"
+                name="email"
                 className="w-full border-2 border-gray-300 rounded-xl sm:rounded-2xl p-3 focus:outline-none focus:border-gray-500 transition-colors"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                value={formData.email}
+                onChange={handleChange}
                 required
               />
             </div>
@@ -82,9 +93,10 @@ function Login() {
               <div className="relative">
                 <input
                   type={showPassword ? "text" : "password"}
+                  name="password"
                   className="w-full border-2 border-gray-300 rounded-xl sm:rounded-2xl p-3 pr-12 focus:outline-none focus:border-gray-500 transition-colors"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  value={formData.password}
+                  onChange={handleChange}
                   required
                 />
                 <button
@@ -96,6 +108,9 @@ function Login() {
                 </button>
               </div>
             </div>
+
+            {/* Error message */}
+            {error && <p className="text-red-600 text-sm">{error}</p>}
 
             {/* Lupa password */}
             <div className="text-right">
@@ -124,9 +139,10 @@ function Login() {
             {/* Button Login */}
             <button
               type="submit"
+              disabled={loading}
               className="w-full bg-black text-white rounded-xl sm:rounded-2xl p-3 mt-6 hover:bg-gray-800 transition-colors font-medium"
             >
-              Login
+              {loading ? "Loading..." : "Login"}
             </button>
 
             {/* Register link */}
