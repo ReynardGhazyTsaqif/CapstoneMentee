@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import api from "../api/axios"; // Pastikan path ini benar
+import api from "../api/axios";
 
 export default function AddressForm({ onClose, onSave, existingAddress }) {
   // State untuk menampung data form, loading, dan error
@@ -16,7 +16,6 @@ export default function AddressForm({ onClose, onSave, existingAddress }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // useEffect untuk mengisi form jika alamat sudah ada
   useEffect(() => {
     if (existingAddress) {
       setFormData({
@@ -42,18 +41,14 @@ export default function AddressForm({ onClose, onSave, existingAddress }) {
     setError(null);
 
     try {
-      // Panggilan API tetap sama
       if (existingAddress) {
         await api.put("/addresses", formData);
       } else {
         await api.post("/addresses", formData);
       }
 
-      // ======================================================
-      // PERBAIKAN DI SINI: Kirim 'formData' kembali ke parent
-      // ======================================================
       onSave(formData);
-      onClose(); // Tutup modal
+      onClose();
     } catch (err) {
       console.error("Gagal menyimpan alamat:", err);
       setError(
@@ -80,7 +75,6 @@ export default function AddressForm({ onClose, onSave, existingAddress }) {
       )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-        {/* Perhatikan 'name' dan 'value' disesuaikan dengan state dan API */}
         <input
           type="text"
           name="recipientName"

@@ -13,18 +13,16 @@ export default function Card({
 }) {
   const handleWishlistClick = (e) => {
     console.log("Tombol HATI di dalam Card diklik!");
-    // Mencegah <Link> di parent agar tidak pindah halaman
+
     e.preventDefault();
-    // Menghentikan event agar tidak "naik" ke parent
+
     e.stopPropagation();
 
-    // Panggil fungsi yang diberikan oleh parent
     if (onWishlistToggle) {
       onWishlistToggle();
     }
   };
 
-  // Mendefinisikan konten kartu sebagai variabel
   const cardContent = (
     <div className="bg-white shadow-md rounded-lg overflow-hidden h-full flex flex-col group relative z-10">
       {/* --- Bagian Gambar --- */}
@@ -88,11 +86,9 @@ export default function Card({
     </div>
   );
 
-  // Jika ada prop 'linkTo', bungkus konten dengan Link
   if (linkTo) {
     return <Link to={linkTo}>{cardContent}</Link>;
   }
 
-  // Jika tidak, tampilkan konten saja
   return cardContent;
 }

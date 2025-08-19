@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from "react";
 
 export default function Modal({ isOpen, onClose, children }) {
-  // State baru untuk mengontrol class animasi
+  // State untuk mengontrol class animasi
   const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
-      // Beri sedikit jeda agar elemennya ada di DOM sebelum animasi dimulai
       const timer = setTimeout(() => setShowModal(true), 10);
       return () => clearTimeout(timer);
     } else {
@@ -17,14 +16,14 @@ export default function Modal({ isOpen, onClose, children }) {
   // Fungsi untuk menutup modal dengan animasi
   const handleClose = () => {
     setShowModal(false);
-    // Beri waktu untuk animasi selesai sebelum memanggil onClose
-    setTimeout(onClose, 300); // Durasi harus sama dengan durasi transisi
+
+    setTimeout(onClose, 300);
   };
 
   if (!isOpen) return null;
 
   return (
-    // Latar belakang gelap
+    // background gelap
     <div
       className={`fixed inset-0 bg-black z-[9999] flex justify-center items-center p-4 transition-opacity duration-300 ease-in-out
         ${showModal ? "bg-opacity-75" : "bg-opacity-0"}

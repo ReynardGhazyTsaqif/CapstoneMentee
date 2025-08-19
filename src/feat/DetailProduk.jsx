@@ -81,10 +81,8 @@ export default function DetailProduk() {
   };
 
   const handleWishlistToggle = async () => {
-    // Simpan state sebelum diubah, untuk jaga-jaga jika API gagal
     const originalWishlistStatus = isWishlisted;
 
-    // Optimistic Update: Langsung ubah UI agar terasa cepat
     setIsWishlisted(!originalWishlistStatus);
 
     try {

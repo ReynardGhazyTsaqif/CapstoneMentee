@@ -1,6 +1,5 @@
 import { Link } from "react-router-dom";
 
-// Komponen untuk ikon pemisah (chevron right)
 const Separator = () => (
   <svg
     className="w-4 h-4 text-gray-400"
@@ -20,12 +19,10 @@ export default function Breadcrumb({ crumbs }) {
     <nav aria-label="breadcrumb">
       <ol className="flex items-center space-x-2 text-sm">
         {crumbs.map((crumb, index) => {
-          // Cek apakah ini crumb terakhir atau bukan
           const isLast = index === crumbs.length - 1;
 
           return (
             <li key={index} className="flex items-center space-x-2">
-              {/* Jika bukan yang terakhir, buat menjadi link */}
               {!isLast ? (
                 <Link
                   to={crumb.path}
@@ -34,13 +31,11 @@ export default function Breadcrumb({ crumbs }) {
                   {crumb.label}
                 </Link>
               ) : (
-                // Jika yang terakhir, tampilkan sebagai teks biasa
                 <span className="font-semibold text-gray-700">
                   {crumb.label}
                 </span>
               )}
 
-              {/* Tampilkan pemisah jika bukan crumb terakhir */}
               {!isLast && <Separator />}
             </li>
           );
