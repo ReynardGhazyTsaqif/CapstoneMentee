@@ -48,7 +48,6 @@ const FilterSidebar = ({ categories = [], filters, onFilterChange }) => {
     filters.price.max,
   ]);
 
-  // Sinkronisasi state lokal jika filter dari induk berubah
   useEffect(() => {
     setPriceValues([filters.price.min, filters.price.max]);
   }, [filters.price]);
@@ -65,12 +64,10 @@ const FilterSidebar = ({ categories = [], filters, onFilterChange }) => {
     onFilterChange({ ...filters, rating: newRating });
   };
 
-  // Hanya mengupdate tampilan slider saat digeser
   const handlePriceDrag = (values) => {
     setPriceValues(values);
   };
 
-  // Mengirim data ke induk saat slider selesai digeser
   const handlePriceFinalChange = (values) => {
     onFilterChange({ ...filters, price: { min: values[0], max: values[1] } });
   };
@@ -80,7 +77,7 @@ const FilterSidebar = ({ categories = [], filters, onFilterChange }) => {
 
   return (
     <>
-      <div className="bg-white shadow-md rounded-lg w-full max-w-xs p-6 font-sans hidden md:block">
+      <div className="bg-white shadow-md rounded-lg w-full max-w-xs p-6 font-sans hidden md:block ">
         {/* Header */}
         <div className="flex items-center mb-6 pb-4 border-b border-gray-200">
           <FilterIcon />

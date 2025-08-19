@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from "react";
+import DynamicBreadcrumb from "../../components/DynamicBreadcrumb";
 import heroimage from "../../assets/img/heroimage.jpg";
-import api from "../../api/axios"; // Pastikan path ini benar
-
+import Modal from "../../components/Modal";
+import AddressForm from "../../components/AddressForm";
+import api from "../../api/axios";
+import { useNavigate, Link } from "react-router-dom";
 // Helper untuk format Rupiah
 const formatRupiah = (number) => {
   return new Intl.NumberFormat("id-ID", {
@@ -15,6 +18,11 @@ export default function ShopCart() {
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const navigate = useNavigate();
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isCheckoutLoading, setIsCheckoutLoading] = useState(false);
+  const [existingAddress, setExistingAddress] = useState(null);
 
   useEffect(() => {
     const fetchCart = async () => {
@@ -38,12 +46,10 @@ export default function ShopCart() {
     fetchCart();
   }, []);
 
-  // PERBAIKAN: Handler sekarang menggunakan variantId untuk API
   const handleQuantityChange = async (item, delta) => {
     const newQuantity = item.quantity + delta;
     if (newQuantity < 1) return;
 
-    // Gunakan optimistic update untuk UI yang responsif
     const originalCartItems = [...cartItems];
     const updatedCartItems = cartItems.map((cartItem) =>
       cartItem.cartItemId === item.cartItemId
@@ -57,11 +63,10 @@ export default function ShopCart() {
     } catch (err) {
       console.error("Gagal update kuantitas:", err);
       alert(err.response?.data?.message || "Gagal memperbarui kuantitas item.");
-      setCartItems(originalCartItems); // Kembalikan state jika API gagal
+      setCartItems(originalCartItems);
     }
   };
 
-  // PERBAIKAN: Handler sekarang menggunakan variantId untuk API
   const handleRemoveItem = async (item) => {
     const originalCartItems = [...cartItems];
     setCartItems(
@@ -75,7 +80,7 @@ export default function ShopCart() {
       alert(
         err.response?.data?.message || "Gagal menghapus item dari keranjang."
       );
-      setCartItems(originalCartItems); // Kembalikan state jika API gagal
+      setCartItems(originalCartItems);
     }
   };
 
@@ -85,6 +90,48 @@ export default function ShopCart() {
   );
   const shippingCost = 25000;
   const grandTotal = subtotal + shippingCost;
+
+  const handleCheckout = async () => {
+    setIsCheckoutLoading(true);
+    try {
+      const response = await api.get("/addresses");
+      const addressData = response.data;
+
+      const checkoutData = {
+        items: cartItems,
+        subtotal,
+        shippingCost,
+        grandTotal,
+        shippingAddress: addressData,
+      };
+      navigate("/checkout", { state: { checkoutData } });
+    } catch (err) {
+      if (err.response && err.response.status === 404) {
+        setExistingAddress(null);
+        setIsModalOpen(true);
+      } else {
+        console.error("Gagal memeriksa alamat:", err);
+        alert("Gagal melanjutkan ke checkout. Silakan coba lagi.");
+      }
+    } finally {
+      setIsCheckoutLoading(false);
+    }
+  };
+
+  // fungsi untuk menangani checkout
+  const handleSaveAddressAndCheckout = (addressData) => {
+    console.log("Alamat disimpan:", addressData);
+
+    const checkoutData = {
+      items: cartItems,
+      subtotal: subtotal,
+      shippingCost: shippingCost,
+      grandTotal: grandTotal,
+      shippingAddress: addressData,
+    };
+
+    navigate("/checkout", { state: { checkoutData } });
+  };
 
   const renderCartContent = () => {
     if (loading)
@@ -127,7 +174,6 @@ export default function ShopCart() {
           <div className="text-center">{formatRupiah(item.price)}</div>
           <div className="flex justify-center items-center">
             <div className="flex items-center border rounded-lg">
-              {/* PERBAIKAN: Kirim seluruh objek 'item' */}
               <button
                 onClick={() => handleQuantityChange(item, -1)}
                 className="px-3 py-1 font-bold"
@@ -152,7 +198,7 @@ export default function ShopCart() {
             <div className="text-right font-semibold">
               {formatRupiah(item.price * item.quantity)}
             </div>
-            {/* PERBAIKAN: Kirim seluruh objek 'item' */}
+
             <button
               onClick={() => handleRemoveItem(item)}
               className="ml-4 text-red-500 hover:text-red-700"
@@ -179,6 +225,7 @@ export default function ShopCart() {
   };
   return (
     <>
+      {/*herosection*/}
       <div
         className="relative w-full h-[50vh] bg-cover bg-center"
         style={{ backgroundImage: `url(${heroimage})` }}
@@ -188,12 +235,26 @@ export default function ShopCart() {
           <h1 className="text-white text-4xl font-bold">Keranjang Belanja</h1>
         </div>
       </div>
+
       <div className="bg-gray-50">
         <div className="container mx-auto p-4 sm:p-6 lg:p-8">
+          <div className="flex flex-col gap-4">
+            {" "}
+            <DynamicBreadcrumb />{" "}
+            <div className="block mb-4">
+              <Link
+                to="/history"
+                className="text-sm font-semibold text-gray-700 border border-gray-300 px-4 py-2 rounded-full hover:bg-gray-100 transition-colors"
+              >
+                Riwayat Pesanan
+              </Link>
+            </div>
+          </div>
+
           <div className="bg-white shadow-md rounded-lg p-6">
             {renderCartContent()}
           </div>
-          {/* Tampilkan Summary Section hanya jika ada item di keranjang */}
+          {/* Tampilan Summary Section jika ada item di keranjang */}
           {cartItems.length > 0 && (
             <div className="w-full md:w-1/2 lg:w-1/3 ml-auto mt-6">
               <div className="bg-white shadow-md rounded-lg p-6 space-y-4">
@@ -209,7 +270,10 @@ export default function ShopCart() {
                   <span>Grand Total</span>
                   <span>{formatRupiah(grandTotal)}</span>
                 </div>
-                <button className="w-full bg-black text-white py-3 mt-4 rounded-lg font-semibold hover:bg-gray-800">
+                <button
+                  onClick={handleCheckout}
+                  className="w-full bg-black text-white py-3 mt-4 rounded-lg font-semibold hover:bg-gray-800"
+                >
                   Checkout
                 </button>
               </div>
@@ -217,8 +281,14 @@ export default function ShopCart() {
           )}
         </div>
       </div>
+
+      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
+        <AddressForm
+          onClose={() => setIsModalOpen(false)}
+          onSave={handleSaveAddressAndCheckout}
+          existingAddress={existingAddress}
+        />
+      </Modal>
     </>
   );
 }
-
-// Helper 'formatRupiah' disembunyikan untuk keringkasan

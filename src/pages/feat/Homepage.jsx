@@ -1,27 +1,23 @@
-import React, { useState, useEffect } from "react"; // 1. Impor useState dan useEffect
+import React, { useState, useEffect } from "react";
 import heroimage from "../../assets/img/heroimage.jpg";
 import bannerimage from "../../assets/img/bannerimage.jpg";
-import api from "../../api/axios"; // 2. Impor instance axios
-import Footer from "../../components/Footer";
-import Navbar from "../../components/Navbar";
+import api from "../../api/axios";
+
 import Card from "../../components/CardShoes";
-import { Link } from "react-router-dom"; // Impor Link jika belum ada
+import { Link } from "react-router-dom";
 
 export default function Homepage() {
-  // 3. Hapus data 'products' statis, ganti dengan state
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // 4. Gunakan useEffect untuk mengambil data saat halaman dimuat
   useEffect(() => {
     const fetchProducts = async () => {
       setLoading(true);
       setError(null);
 
       try {
-        const response = await api.get("/products?limit=8"); // Ambil 8 produk
-        // PERBAIKAN 1: Ambil array dari dalam 'response.data.products'
+        const response = await api.get("/products?limit=8");
         setProducts(response.data.products);
       } catch (err) {
         console.error("Gagal mengambil produk homepage:", err);
@@ -32,21 +28,19 @@ export default function Homepage() {
     };
 
     fetchProducts();
-  }, []); // Array dependensi kosong agar hanya berjalan sekali saat mount
+  }, []);
 
   return (
     <>
       <div className="bg-black w-full max-h-full">
         <div className="bg-white w-full min-h-screen mx-auto flex flex-col">
-          {/* hero-section (tidak ada perubahan) */}
+          {/* hero-section  */}
           <div
             className="relative w-full h-[75vh] bg-cover bg-center mx-auto"
             style={{ backgroundImage: `url(${heroimage})` }}
           >
             <div className="absolute inset-0 bg-black opacity-50">
               <div className="relative z-10 flex flex-col justify-between h-full p-6">
-                <Navbar variant="transparent" />{" "}
-                {/* Gunakan Navbar yang sudah ada */}
                 <div className="p-8 md:p-12">
                   <h1 className="text-white text-4xl md:text-5xl font-bold">
                     Lorem Ipsum <br />
@@ -58,7 +52,7 @@ export default function Homepage() {
           </div>
           {/* end-hero-section */}
 
-          {/* content-section (tidak ada perubahan) */}
+          {/* content-section  */}
           <div className="flex items-center justify-center p-6 py-16">
             <p className="text-gray-700 text-center text-xl font-medium max-w-3xl">
               Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do
@@ -72,7 +66,6 @@ export default function Homepage() {
             <div className="absolute inset-0 bg-black opacity-50"></div>
           </div>
 
-          {/* Bagian ini tidak berubah */}
           <div className="container mx-auto">
             <div className="flex flex-col items-center justify-center py-16 px-4">
               <h2 className="font-semibold text-4xl text-center">
@@ -84,7 +77,6 @@ export default function Homepage() {
               </h3>
             </div>
 
-            {/* --- PERUBAHAN DI SINI --- */}
             {/* Card Section */}
             <div className="px-4 pb-16">
               {loading && <p className="text-center">Loading produk...</p>}
@@ -92,16 +84,11 @@ export default function Homepage() {
               {!loading && !error && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 px-4 gap-6">
                   {products.map((product) => {
-                    // PERBAIKAN 2: Proses URL gambar
-
                     const imageUrl =
                       product.images && product.images.length > 0
-                        ? // Langsung ambil URL dari API karena sudah lengkap
-                          product.images[0].image_url
-                        : // Sediakan gambar placeholder jika tidak ada gambar
-                          "https://placehold.co/400x300/e2e8f0/333?text=No+Image";
+                        ? product.images[0].image_url
+                        : "https://placehold.co/400x300/e2e8f0/333?text=No+Image";
 
-                    // Tambahan: Perbaiki double slash jika masih ada dari API
                     const cleanImageUrl = imageUrl.replace(
                       /([^:]\/)\/+/g,
                       "$1"
@@ -113,7 +100,6 @@ export default function Homepage() {
                           imageUrl={cleanImageUrl}
                           name={product.name}
                           description={product.description}
-                          // PERBAIKAN 3: Beri nilai default untuk rating
                           rating={product.rating || "N/A"}
                           price={`Rp${product.price.toLocaleString("id-ID")}`}
                         />
@@ -125,7 +111,16 @@ export default function Homepage() {
             </div>
             {/* End of Card Section */}
 
-            {/* Exclusive Section (tidak ada perubahan) */}
+            <Link to="/kategori">
+              {" "}
+              <div className="flex justify-center items-center py-20">
+                <button className="border-black border-2 font-medium w-3/5 md:w-1/4 text-black px-6 py-2.5 rounded-2xl hover:bg-black hover:text-white transition-colors">
+                  Lihat Hasil Lainnya
+                </button>
+              </div>{" "}
+            </Link>
+
+            {/* Exclusive Section  */}
             <section className="pb-20">
               <div className="flex flex-col lg:flex-row lg:justify-between items-center px-6 md:px-10 gap-12">
                 <div className="w-full lg:w-2/3 flex flex-col items-center lg:items-start text-center lg:text-left gap-8">
@@ -153,7 +148,6 @@ export default function Homepage() {
             {/* End of Exclusive Section */}
           </div>
         </div>
-        <Footer />
       </div>
     </>
   );

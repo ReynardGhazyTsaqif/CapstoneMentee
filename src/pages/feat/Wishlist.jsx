@@ -2,27 +2,22 @@ import React, { useState, useEffect } from "react";
 import heroimage from "../../assets/img/heroimage.jpg";
 import Card from "../../components/CardShoes";
 import { Link } from "react-router-dom";
-import api from "../../api/axios"; // Menggunakan instance axios
+import api from "../../api/axios";
 
 export default function Wishlist() {
-  // 1. Siapkan state untuk item wishlist, loading, dan error
   const [wishlistItems, setWishlistItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // 2. Gunakan useEffect untuk mengambil data wishlist saat halaman dimuat
   useEffect(() => {
     const fetchWishlist = async () => {
       setLoading(true);
       setError(null);
       try {
-        // Panggil endpoint untuk mengambil data wishlist pengguna yang sedang login
         const response = await api.get("/wishlist");
-
-        setWishlistItems(response.data); // Asumsikan API mengembalikan array produk
+        setWishlistItems(response.data);
       } catch (err) {
         console.error("Gagal mengambil data wishlist:", err);
-        // Cek jika error karena tidak login (401 Unauthorized)
         if (err.response && err.response.status === 401) {
           setError("Anda harus login untuk melihat wishlist.");
         } else {
@@ -32,9 +27,25 @@ export default function Wishlist() {
         setLoading(false);
       }
     };
-
     fetchWishlist();
-  }, []); // Array kosong agar hanya berjalan sekali
+  }, []);
+
+  // --- FUNGSI UNTUK MENGHAPUS ITEM DARI WISHLIST ---
+  const handleRemoveFromWishlist = async (productId) => {
+    const originalItems = [...wishlistItems];
+
+    setWishlistItems(
+      originalItems.filter((item) => item.Product.id !== productId)
+    );
+
+    try {
+      await api.delete(`/wishlist/${productId}`);
+    } catch (err) {
+      console.error("Gagal menghapus dari wishlist:", err);
+      setWishlistItems(originalItems);
+      alert("Gagal menghapus item dari wishlist.");
+    }
+  };
 
   const renderWishlistContent = () => {
     if (loading) {
@@ -58,36 +69,30 @@ export default function Wishlist() {
       );
     }
     return wishlistItems.map((item) => {
-      // ======================================================
-      // PERBAIKAN DI SINI: Ambil data dari 'item.Product' (P besar)
-      // ======================================================
       const productData = item.Product;
-
-      // Pengaman jika data produk tidak ada
       if (!productData) return null;
 
-      // Proses URL gambar dari data produk yang benar
       const imageUrl =
         productData.images && productData.images.length > 0
-          ? `${
-              import.meta.env.VITE_API_BASE_URL
-            }/${productData.images[0].image_url.replace(/\\/g, "/")}`
+          ? productData.images[0].image_url
           : "https://placehold.co/400x300/e2e8f0/333?text=No+Image";
 
       return (
-        // Gunakan item.id untuk key karena ini unik untuk entri wishlist
-        <Link key={item.id} to={`/kategori/${productData.id}`}>
-          <Card
-            imageUrl={imageUrl}
-            name={productData.name}
-            description={productData.description || ""} // Beri fallback jika deskripsi tidak ada
-            rating={productData.rating || "N/A"}
-            price={`Rp${productData.price.toLocaleString("id-ID")}`}
-          />
-        </Link>
+        <Card
+          key={item.id}
+          imageUrl={imageUrl}
+          name={productData.name}
+          description={productData.description || ""}
+          rating={productData.rating || "N/A"}
+          price={`Rp${productData.price.toLocaleString("id-ID")}`}
+          isWishlisted={true}
+          onWishlistToggle={() => handleRemoveFromWishlist(productData.id)}
+          linkTo={`/kategori/${productData.id}`}
+        />
       );
     });
   };
+
   return (
     <>
       <div className="flex flex-col">

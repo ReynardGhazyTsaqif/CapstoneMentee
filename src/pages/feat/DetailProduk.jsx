@@ -6,6 +6,17 @@ import api from "../../api/axios";
 import { Heart } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
+// 1. Komponen baru untuk Notifikasi
+const Notification = ({ message, type, show }) => {
+  if (!show) return null;
+
+  const baseClasses =
+    "fixed top-5 right-5 z-50 p-4 rounded-lg shadow-lg text-white transition-all duration-300 ease-in-out";
+  const typeClasses = type === "success" ? "bg-green-600" : "bg-red-600";
+
+  return <div className={`${baseClasses} ${typeClasses}`}>{message}</div>;
+};
+
 export default function DetailProduk() {
   const { productId } = useParams();
   const navigate = useNavigate();
@@ -20,6 +31,12 @@ export default function DetailProduk() {
   const [selectedSize, setSelectedSize] = useState(null);
 
   const [isWishlisted, setIsWishlisted] = useState(false);
+
+  const [notification, setNotification] = useState({
+    show: false,
+    message: "",
+    type: "",
+  });
 
   useEffect(() => {
     // Fungsi untuk mengambil data produk utama
@@ -72,46 +89,60 @@ export default function DetailProduk() {
   if (!product)
     return <div className="text-center py-20">Produk tidak ditemukan!</div>;
 
-  // 3. Modifikasi fungsi handleAddToCart
   const handleAddToCart = async () => {
     if (!selectedSize) {
-      alert("Silakan pilih ukuran terlebih dahulu!");
+      setNotification({
+        show: true,
+        message: "Silakan pilih ukuran terlebih dahulu!",
+        type: "error",
+      });
+      setTimeout(
+        () => setNotification({ show: false, message: "", type: "" }),
+        3000
+      );
       return;
     }
 
     try {
-      // 1. Cari varian produk berdasarkan ukuran yang dipilih
       const selectedVariant = product.sizes.find(
         (s) => s.size === selectedSize
       );
-
-      // Pengaman jika varian tidak ditemukan
       if (!selectedVariant) {
-        alert("Varian produk tidak ditemukan.");
-        return;
+        throw new Error("Varian produk tidak ditemukan.");
       }
 
-      // 2. Siapkan data sesuai format yang diminta API
       const cartItem = {
         productVariantId: selectedVariant.variantId,
         quantity: quantity,
       };
 
-      // 3. Panggil endpoint POST /cart dengan data yang benar
       await api.post("/cart", cartItem);
 
-      alert(`${product.name} berhasil ditambahkan ke keranjang!`);
-      navigate("/shopcart");
+      // Tampilkan notifikasi sukses
+      setNotification({
+        show: true,
+        message: `${product.name} ditambahkan ke keranjang!`,
+        type: "success",
+      });
+
+      // menyembunyikan notifikasi setelah 3 detik
+      setTimeout(() => {
+        setNotification({ show: false, message: "", type: "" });
+        navigate("/kategori/shopcart");
+      }, 3000);
     } catch (err) {
       console.error("Gagal menambahkan ke keranjang:", err);
       const errorMessage =
-        err.response?.data?.message || "Gagal menambahkan item ke keranjang.";
+        err.response?.data?.message || "Gagal menambahkan item.";
+
+      // menampilkan notifikasi error
+      setNotification({ show: true, message: errorMessage, type: "error" });
+      setTimeout(() => {
+        setNotification({ show: false, message: "", type: "" });
+      }, 3000);
 
       if (err.response && err.response.status === 401) {
-        alert("Anda harus login untuk menambahkan item ke keranjang.");
-        navigate("/login");
-      } else {
-        alert(errorMessage);
+        setTimeout(() => navigate("/login"), 1500);
       }
     }
   };
@@ -141,6 +172,11 @@ export default function DetailProduk() {
 
   return (
     <div className="bg-white">
+      <Notification
+        show={notification.show}
+        message={notification.message}
+        type={notification.type}
+      />
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-6">
           <DynamicBreadcrumb />
@@ -181,7 +217,7 @@ export default function DetailProduk() {
           </div>
 
           {/* --- KOLOM KANAN: DETAIL INFO PRODUK --- */}
-          {/* Diberi lebar, background, dan padding */}
+
           <div className="w-full lg:w-1/2 bg-gray-100 rounded-lg p-8">
             <div className="flex justify-between items-start">
               <div>
@@ -192,7 +228,7 @@ export default function DetailProduk() {
                   {product.name}
                 </h1>
               </div>
-              {/* Ikon Hati dipindah ke sini */}
+
               <button
                 onClick={handleWishlistToggle}
                 aria-label="Toggle Wishlist"
@@ -272,7 +308,7 @@ export default function DetailProduk() {
             </div>
 
             <div className="flex items-center gap-4">
-              {/* Tombol Wishlist baru */}
+              {/* Tombol Wishlist */}
               <button
                 onClick={handleWishlistToggle}
                 className="w-1/2 border border-black text-black py-3 rounded-full font-semibold hover:bg-gray-200 transition-colors flex items-center justify-center gap-2"
@@ -311,7 +347,6 @@ export default function DetailProduk() {
           </h3>
           <p className="text-gray-600 mb-6">{product.description}</p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-            {/* Pastikan specifications adalah objek sebelum di-map */}
             {typeof product.specifications === "object" &&
               Object.entries(product.specifications).map(([key, value]) => (
                 <div key={key} className="flex border-b py-2">

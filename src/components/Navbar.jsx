@@ -4,8 +4,6 @@ import MenuIcons from "./menuicons";
 
 export default function Navbar() {
   return (
-    // Ini adalah pembungkus utama dari navbar di Homepage Anda
-    // Kita gunakan <nav> untuk semantik yang lebih baik
     <nav className="flex justify-between items-center w-full">
       {/* Bagian Kiri: Nama Brand */}
       <div className="hidden md:block">

@@ -2,7 +2,6 @@ import React from "react";
 import { useAuth } from "../context/AuthContext";
 import { Navigate, Outlet } from "react-router-dom";
 
-// Komponen sederhana untuk tampilan loading
 const FullPageLoader = () => (
   <div className="flex items-center justify-center min-h-screen">
     <div className="text-lg font-semibold">Loading...</div>

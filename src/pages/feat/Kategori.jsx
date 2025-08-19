@@ -4,7 +4,7 @@ import FilterSidebar from "../../components/FilterSidebar";
 import SortingBar from "../../components/SortingBar";
 import Card from "../../components/CardShoes";
 import DynamicBreadcrumb from "../../components/DynamicBreadcrumb";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import api from "../../api/axios";
 
 export default function Kategori() {
@@ -25,25 +25,27 @@ export default function Kategori() {
     categories: [],
     rating: null,
     price: { min: 0, max: 10000000 },
+    sortBy: "createdAt",
+    order: "DESC",
   });
 
-  // 2. Buat useEffect baru untuk mengambil daftar kategori
+  const [searchParams] = useSearchParams();
+  const searchTermFromURL = searchParams.get("search");
+
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        // Panggil endpoint baru untuk kategori/tipe
         const response = await api.get("/products/types");
 
-        // Asumsikan responsnya adalah array of strings: ["Sneakers", "Boots", ...]
         setAvailableCategories(response.data);
       } catch (err) {
         console.error("Gagal mengambil data kategori:", err);
-        // Jika gagal, bisa set default agar filter tidak kosong
+
         setAvailableCategories([]);
       }
     };
     fetchCategories();
-  }, []); // <-- Array kosong agar hanya berjalan sekali
+  }, []);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -51,14 +53,22 @@ export default function Kategori() {
       setError(null);
 
       const params = new URLSearchParams();
+
+      if (searchTermFromURL) {
+        params.append("search", searchTermFromURL);
+      }
+
       if (filters.categories.length > 0) {
         filters.categories.forEach((cat) => params.append("tipe", cat));
       }
       if (filters.rating) {
-        params.append("rating_gte", filters.rating);
+        params.append("rating", filters.rating);
       }
       params.append("minPrice", filters.price.min);
       params.append("maxPrice", filters.price.max);
+
+      params.append("sortBy", filters.sortBy);
+      params.append("order", filters.order);
 
       try {
         const response = await api.get(`/products?${params.toString()}`);
@@ -78,10 +88,18 @@ export default function Kategori() {
     };
 
     fetchProducts();
-  }, [filters]);
+  }, [filters, searchTermFromURL]);
 
   const handleFilterChange = (newFilters) => {
     setFilters(newFilters);
+  };
+
+  const handleSortChange = (sortBy, order) => {
+    setFilters((prevFilters) => ({
+      ...prevFilters,
+      sortBy: sortBy,
+      order: order,
+    }));
   };
 
   const renderProductContent = () => {
@@ -136,22 +154,29 @@ export default function Kategori() {
         </div>
 
         <div className="container mx-auto flex flex-col md:flex-row px-6">
+          {/* Kolom Kiri - Wrapper untuk Sidebar */}
           <div className="w-full md:w-1/4 lg:w-1/5 py-6">
-            <FilterSidebar
-              categories={availableCategories}
-              filters={filters}
-              onFilterChange={handleFilterChange}
-            />
+            <div className="sticky top-6">
+              <FilterSidebar
+                categories={availableCategories}
+                filters={filters}
+                onFilterChange={handleFilterChange}
+              />
+            </div>
           </div>
 
+          {/* Kolom Kanan - Hasil Pencarian */}
           <div className="w-full md:w-3/4 lg:w-4/5 py-4 md:px-10 md:py-6">
             <div className="hidden md:block my-2">
               <DynamicBreadcrumb />
             </div>
             <div className="mb-6">
-              <SortingBar />
+              <SortingBar
+                onSortChange={handleSortChange}
+                currentSort={{ sortBy: filters.sortBy, order: filters.order }}
+              />
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {renderProductContent()}
             </div>
           </div>
