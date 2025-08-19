@@ -37,7 +37,7 @@ export default function Login() {
 
         // Arahkan pengguna berdasarkan role mereka
         if (response.data.user.role === "admin") {
-          navigate("/admin/productlist"); // Arahkan admin ke daftar produk
+          navigate("/admin/dashboard"); // Arahkan admin ke daftar produk
         } else {
           navigate("/"); // Arahkan user biasa ke homepage
         }
