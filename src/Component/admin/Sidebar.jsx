@@ -25,35 +25,16 @@ export default function Sidebar() {
     <nav
       className="
         fixed top-0 left-0 h-screen 
-        w-[20.8333%] bg-[#090C47] 
-        text-white p-5 space-y-4
-        overflow-y-auto
-        md:relative md:h-auto
+    w-[20.8333%] bg-[#090C47] 
+    text-white p-5 space-y-4
+    overflow-y-auto
       "
     >
       {/* Profile */}
-      <div className="flex flex-row mt-3 items-center gap-3 mb-8">
-        <img
-          className="w-10 h-10 rounded-full object-cover"
-          src="d"
-          alt="FotoAdmin"
-        />
-        <div className="leading-tight">
-          <p className="font-semibold text-sm">Nama Admin</p>
-          <p className="text-xs text-gray-300">Admin Shoezy</p>
-        </div>
-      </div>
-
-      {/* Search */}
-      <div className="relative w-full text-black rounded-xl pr-4 mb-8">
-        <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
-          <Search className="w-5 h-5" />
-        </div>
-        <input
-          type="text"
-          placeholder="Search..."
-          className="w-full pl-15 pr-4 py-4 border bg-white placeholder-gray-400 rounded-2xl focus:outline-none"
-        />
+      <div className="flex justify-center mt-3 items-center gap-3 mb-8 uppercase">
+        <p className="text-3xl font-bold text-gray-300 tracking-wider">
+          Shoezy
+        </p>
       </div>
 
       {/* Menu */}

@@ -35,7 +35,10 @@ function EditProduct() {
           tipe: data.tipe || "",
           status: data.status || "Active",
           specifications: data.specifications
-            ? Object.entries(data.specifications).map(([key, value]) => ({ key, value }))
+            ? Object.entries(data.specifications).map(([key, value]) => ({
+                key,
+                value,
+              }))
             : [],
           sizes: data.sizes || [],
         });
@@ -57,7 +60,10 @@ function EditProduct() {
   };
 
   const addSpecification = () => {
-    setProduct({ ...product, specifications: [...product.specifications, { key: "", value: "" }] });
+    setProduct({
+      ...product,
+      specifications: [...product.specifications, { key: "", value: "" }],
+    });
   };
 
   const removeSpecification = (index) => {
@@ -75,7 +81,10 @@ function EditProduct() {
   const addSize = () => {
     setProduct({
       ...product,
-      sizes: [...product.sizes, { variantId: product.sizes.length + 1, size: "", stock: "" }],
+      sizes: [
+        ...product.sizes,
+        { variantId: product.sizes.length + 1, size: "", stock: "" },
+      ],
     });
   };
 
@@ -106,12 +115,15 @@ function EditProduct() {
       formData.append("price", product.price);
       formData.append("tipe", product.tipe);
       formData.append("status", product.status);
-      formData.append("specifications", JSON.stringify(
-        product.specifications.reduce((acc, curr) => {
-          if (curr.key && curr.value) acc[curr.key] = curr.value;
-          return acc;
-        }, {})
-      ));
+      formData.append(
+        "specifications",
+        JSON.stringify(
+          product.specifications.reduce((acc, curr) => {
+            if (curr.key && curr.value) acc[curr.key] = curr.value;
+            return acc;
+          }, {})
+        )
+      );
       formData.append("sizes", JSON.stringify(product.sizes));
 
       files.forEach((file) => {
@@ -161,7 +173,9 @@ function EditProduct() {
         </button>
 
         <div className="pl-12">
-          <label className="block text-xl font-semibold mb-3">Nama Produk</label>
+          <label className="block text-xl font-semibold mb-3">
+            Nama Produk
+          </label>
           <input
             type="text"
             name="name"
@@ -217,7 +231,10 @@ function EditProduct() {
           <input
             type="text"
             name="stock"
-            value={product.sizes.reduce((acc, s) => acc + Number(s.stock || 0), 0)}
+            value={product.sizes.reduce(
+              (acc, s) => acc + Number(s.stock || 0),
+              0
+            )}
             readOnly
             className="w-8/12 text-xl mb-6 pl-6 pr-4 py-4 border rounded-3xl bg-gray-100"
           />
@@ -234,7 +251,9 @@ function EditProduct() {
           </select>
 
           {/* Specifications */}
-          <label className="block text-xl font-semibold mb-3">Spesifikasi</label>
+          <label className="block text-xl font-semibold mb-3">
+            Spesifikasi
+          </label>
           {product.specifications.map((spec, index) => (
             <div key={index} className="flex gap-3 mb-4 items-center w-8/12">
               <input
@@ -248,10 +267,15 @@ function EditProduct() {
                 type="text"
                 placeholder="Isi Spesifikasi"
                 value={spec.value}
-                onChange={(e) => handleSpecChange(index, "value", e.target.value)}
+                onChange={(e) =>
+                  handleSpecChange(index, "value", e.target.value)
+                }
                 className="flex-1 text-xl pl-4 py-3 border rounded-2xl"
               />
-              <button onClick={() => removeSpecification(index)} className="p-2 text-red-500">
+              <button
+                onClick={() => removeSpecification(index)}
+                className="p-2 text-red-500"
+              >
                 <Trash2 />
               </button>
             </div>
@@ -264,24 +288,33 @@ function EditProduct() {
           </button>
 
           {/* Sizes */}
-          <label className="block text-xl font-semibold mb-3">Sizes & Stock</label>
+          <label className="block text-xl font-semibold mb-3">
+            Sizes & Stock
+          </label>
           {product.sizes.map((s, index) => (
             <div key={index} className="flex gap-3 mb-4 items-center w-8/12">
               <input
                 type="number"
                 placeholder="Ukuran"
                 value={s.size}
-                onChange={(e) => handleSizeChange(index, "size", e.target.value)}
+                onChange={(e) =>
+                  handleSizeChange(index, "size", e.target.value)
+                }
                 className="flex-1 text-xl pl-4 py-3 border rounded-2xl"
               />
               <input
                 type="number"
                 placeholder="Stok"
                 value={s.stock}
-                onChange={(e) => handleSizeChange(index, "stock", e.target.value)}
+                onChange={(e) =>
+                  handleSizeChange(index, "stock", e.target.value)
+                }
                 className="flex-1 text-xl pl-4 py-3 border rounded-2xl"
               />
-              <button onClick={() => removeSize(index)} className="p-2 text-red-500">
+              <button
+                onClick={() => removeSize(index)}
+                className="p-2 text-red-500"
+              >
                 <Trash2 />
               </button>
             </div>
@@ -354,3 +387,5 @@ function EditProduct() {
 }
 
 export default EditProduct;
+
+

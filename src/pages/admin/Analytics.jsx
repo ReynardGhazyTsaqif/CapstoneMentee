@@ -118,7 +118,7 @@ function Analytics() {
 
       <p className="ml-5 my-10 font-semibold text-2xl">Top Selling Porduk</p>
 
-      <div className="w-8/12 ml-5  rounded-md  mb-16">
+      <div className="w-full px-5  rounded-md  mb-16">
         
         <table className="w-full border-collapse border border-gray-200">
           <thead className="bg-gray-200 uppercase">
