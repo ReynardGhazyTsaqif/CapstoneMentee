@@ -9,7 +9,7 @@ export default function AdminLayout({ children }) {
       <Sidebar />
 
       {/* Konten utama */}
-      <div className="ml-[20.8333%] flex flex-col min-h-screen">
+      <div className="md:ml-[20.8333%] ml-16 flex flex-col min-h-screen">
         {/* Navbar */}
         <Navbar />
 
