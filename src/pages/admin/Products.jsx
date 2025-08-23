@@ -8,19 +8,45 @@ function Products() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  
   const itemsPerPage = 10;
+  
 
   // Normalizer agar nama field konsisten (brand/name/price/description/color/materialAtas/materialSol/sku/tipe/status/images/sizes)
   const normalizeProduct = (raw) => {
-    const imagesArr =
-      Array.isArray(raw?.images)
-        ? raw.images
-        : raw?.images
-        ? [raw.images]
-        : [];
+    const imagesArr = Array.isArray(raw?.images)
+      ? raw.images
+      : raw?.image
+      ? [raw.image]
+      : [];
 
-    const sizesArr =
-      Array.isArray(raw?.sizes) ? raw.sizes : Array.isArray(raw?.variants) ? raw.variants : [];
+
+    const fixedImages = imagesArr
+      .map((img) =>
+        img
+          ? img.startsWith("http")
+            ? img
+            : `${import.meta.env.VITE_API_BASE_URL}/${img.replace(/^\/+/, "")}`
+          : null
+      )
+      .filter(Boolean);
+
+    const sizesArr = Array.isArray(raw?.sizes)
+      ? raw.sizes
+      : Array.isArray(raw?.variants)
+      ? raw.variants
+      : [];
+
+    let specs = {};
+    try {
+      if (raw.specifications && typeof raw.specifications === "string") {
+        specs = JSON.parse(raw.specifications);
+      } else if (typeof raw.specifications === "object") {
+        specs = raw.specifications;
+      }
+    } catch (e) {
+      console.warn("❌ Gagal parse specifications:", e);
+    }
 
     return {
       id: raw.id ?? raw._id ?? raw.productId,
@@ -28,13 +54,15 @@ function Products() {
       name: raw.name ?? raw.nama ?? "",
       price: Number(raw.price ?? raw.harga ?? 0),
       description: raw.description ?? raw.deskripsi ?? "",
-      color: raw.color ?? raw.warna ?? "",
-      materialAtas: raw.materialAtas ?? raw.material_atas ?? "",
-      materialSol: raw.materialSol ?? raw.material_sol ?? "",
-      sku: raw.sku ?? raw.kodeSku ?? raw.kode_sku ?? "",
-      tipe: raw.tipe ?? raw.type ?? raw.kategori ?? "",
+      color: raw.color ?? raw.warna ?? specs["Warna"] ?? "",
+      materialAtas:
+        raw.materialAtas ?? raw.material_atas ?? specs["Material Atas"] ?? "",
+      materialSol:
+        raw.materialSol ?? raw.material_sol ?? specs["Material Sol"] ?? "",
+      sku: raw.sku ?? raw.kodeSku ?? raw.kode_sku ?? specs["Kode SKU"] ?? "",
+      tipe: raw.type?.name ?? raw.tipe ?? raw.kategori ?? "",
       status: raw.status ?? "active",
-      images: imagesArr,
+      images: fixedImages,
       // dukung bentuk variants seperti: [{size:40, stock:10}, {size:41, stock:15}]
       sizes: sizesArr.map((v, i) => ({
         size: v.size ?? v.ukuran ?? v.label ?? `Var-${i + 1}`,
@@ -44,14 +72,18 @@ function Products() {
     };
   };
 
-
   useEffect(() => {
     const fetchProducts = async () => {
       setLoading(true);
       try {
         console.log("🔄 Fetching products...");
         const res = await api.get("/products");
-        const list = Array.isArray(res.data?.products) ? res.data.products : Array.isArray(res.data) ? res.data : [];
+        console.log("Raw API Response:", res.data);
+        const list = Array.isArray(res.data?.products)
+          ? res.data.products
+          : Array.isArray(res.data)
+          ? res.data
+          : [];
         if (!Array.isArray(list)) {
           setProducts([]);
           return;
@@ -70,14 +102,23 @@ function Products() {
               const merged = { ...base, ...normalizeProduct(detRes.data) };
 
               // Gabungkan images & sizes (unik)
-              const images = [...(base.images || []), ...(merged.images || [])].filter(Boolean);
+              const images = [
+                ...(base.images || []),
+                ...(merged.images || []),
+              ].filter(Boolean);
+
+              console.log("Final Images for product:", merged.name, images);
               const sizesMap = new Map();
               [...(base.sizes || []), ...(merged.sizes || [])].forEach((s) => {
                 const key = `${s.size}`;
                 if (!sizesMap.has(key)) sizesMap.set(key, s);
               });
 
-              return { ...merged, images, sizes: Array.from(sizesMap.values()) };
+              return {
+                ...merged,
+                images,
+                sizes: Array.from(sizesMap.values()),
+              };
             } catch (e) {
               console.warn(`ℹ️ Detail not available for product ${p.id}`, e);
               return normalizeProduct(p);
@@ -99,15 +140,16 @@ function Products() {
 
   const statusBadge = (status) => {
     const st = (status || "").toString().toLowerCase();
-    if (st === "inactive" || st === "draft")
-      return "bg-gray-100 text-gray-600";
-    if (st === "archived")
-      return "bg-zinc-100 text-zinc-700";
+    if (st === "inactive" || st === "draft") return "bg-gray-100 text-gray-600";
+    if (st === "archived") return "bg-zinc-100 text-zinc-700";
     // default active
     return "bg-green-100 text-green-600";
   };
 
-  const totalStock = (p) => (Array.isArray(p.sizes) ? p.sizes.reduce((a, s) => a + (s.stock || 0), 0) : 0);
+  const totalStock = (p) =>
+    Array.isArray(p.sizes)
+      ? p.sizes.reduce((a, s) => a + (s.stock || 0), 0)
+      : 0;
 
   // Pagination
   const totalPages = Math.ceil(products.length / itemsPerPage);
@@ -116,8 +158,6 @@ function Products() {
 
   const prevPage = () => setCurrentPage((p) => Math.max(p - 1, 1));
   const nextPage = () => setCurrentPage((p) => Math.min(p + 1, totalPages));
-
-
 
   return (
     <AdminLayout>
@@ -154,55 +194,65 @@ function Products() {
           <table className="w-full border-collapse border border-gray-200 min-w-[1200px]">
             <thead className="bg-gray-200 uppercase">
               <tr>
-                <th className="border-b px-4 py-3">Foto</th>
-                <th className="border-b px-4 py-3">Brand</th>
-                <th className="border-b px-4 py-3">Nama</th>
-                <th className="border-b px-4 py-3">Harga</th>
-                <th className="border-b px-4 py-3">Warna</th>
-                <th className="border-b px-4 py-3">SKU</th>
-                <th className="border-b px-4 py-3">Tipe</th>
-                <th className="border-b px-4 py-3">Material (Atas/Sol)</th>
-                <th className="border-b px-4 py-3">Deskripsi</th>
-                <th className="border-b px-4 py-3">Stok</th>
-                <th className="border-b px-4 py-3">Status</th>
-                <th className="border-b px-4 py-3"></th>
+                <th className="border-b px-6 py-3">Foto</th>
+                <th className="border-b px-6 py-3">Brand</th>
+                <th className="border-b px-6 py-3">Nama</th>
+                <th className="border-b px-6 py-3">Harga</th>
+                <th className="border-b px-6 py-3">Warna</th>
+                <th className="border-b px-6 py-3">SKU</th>
+                <th className="border-b px-6 py-3">Tipe</th>
+                <th className="border-b px-6 py-3">Material (Atas/Sol)</th>
+                <th className="border-b px-6 py-3">Deskripsi</th>
+                <th className="border-b px-6 py-3">Stok</th>
+                <th className="border-b px-6 py-3">Status</th>
+                <th className="border-b px-6 py-3"></th>
               </tr>
             </thead>
             <tbody>
               {currentData.length > 0 ? (
                 currentData.map((p) => {
-                  const imgSrc = Array.isArray(p.images) ? p.images[0] : p.images;
                   return (
                     <tr key={p.id}>
-                      <td className="border-b px-4 py-4">
-                        {imgSrc ? (
+                      <td className="border-b px-6 py-4">
+                        {p.images && p.images.length > 0 ? (
                           <img
-                            src={imgSrc}
+                            src={p.images[0]}
                             alt={p.name}
                             className="w-12 h-12 object-cover rounded"
                           />
                         ) : (
-                          <div className="w-12 h-12 bg-gray-300 rounded" />
+                          <div className="w-12 h-12 rounded" />
                         )}
                       </td>
-                      <td className="border-b px-4 py-4">{p.brand}</td>
-                      <td className="border-b px-4 py-4 font-medium">{p.name}</td>
-                      <td className="border-b px-4 py-4">
+                      <td className="border-b px-6 py-4">{p.brand}</td>
+                      <td className="border-b px-6 py-4 font-medium">
+                        {p.name}
+                      </td>
+                      <td className="border-b px-6 py-4">
                         Rp{Number(p.price || 0).toLocaleString("id-ID")}
                       </td>
-                      <td className="border-b px-4 py-4">{p.color}</td>
-                      <td className="border-b px-4 py-4">{p.sku}</td>
-                      <td className="border-b px-4 py-4">{p.tipe}</td>
-                      <td className="border-b px-4 py-4">
+                      <td className="border-b px-6 py-4">{p.color}</td>
+                      <td className="border-b px-6 py-4">{p.sku}</td>
+                      <td className="border-b px-6 py-4">{p.tipe}</td>
+                      <td className="border-b px-6 py-4">
                         <div className="text-sm">
-                          <div><span className="text-gray-500">Atas:</span> {p.materialAtas || "-"}</div>
-                          <div><span className="text-gray-500">Sol:</span> {p.materialSol || "-"}</div>
+                          <div>
+                            <span className="text-gray-500">Atas:</span>{" "}
+                            {p.materialAtas || "-"}
+                          </div>
+                          <div>
+                            <span className="text-gray-500">Sol:</span>{" "}
+                            {p.materialSol || "-"}
+                          </div>
                         </div>
                       </td>
-                      <td className="border-b px-4 py-4 max-w-[280px] overflow-hidden text-ellipsis whitespace-nowrap" title={p.description}>
+                      <td
+                        className="border-b px-6 py-4 max-w-[280px] overflow-hidden text-ellipsis whitespace-nowrap"
+                        title={p.description}
+                      >
                         {p.description || "-"}
                       </td>
-                      <td className="border-b px-4 py-4">
+                      <td className="border-b px-6 py-4">
                         {totalStock(p)}
                         {/* Nested sizes table (opsional): */}
                         {Array.isArray(p.sizes) && p.sizes.length > 0 && (
@@ -210,14 +260,20 @@ function Products() {
                             <table className="w-full text-xs">
                               <thead className="bg-gray-50">
                                 <tr>
-                                  <th className="border px-2 py-1 text-left">Size</th>
-                                  <th className="border px-2 py-1 text-left">Stock</th>
+                                  <th className="border px-2 py-1 text-left">
+                                    Size
+                                  </th>
+                                  <th className="border px-2 py-1 text-left">
+                                    Stock
+                                  </th>
                                 </tr>
                               </thead>
                               <tbody>
                                 {p.sizes.map((s) => (
                                   <tr key={s.variantId}>
-                                    <td className="border px-2 py-1">{s.size}</td>
+                                    <td className="border px-2 py-1">
+                                      {s.size}
+                                    </td>
                                     <td className="border px-2 py-1">
                                       <span
                                         className={`px-2 py-0.5 rounded text-[11px] ${
@@ -238,12 +294,16 @@ function Products() {
                           </div>
                         )}
                       </td>
-                      <td className="border-b px-4 py-4">
-                        <span className={`px-3 py-1 rounded-full font-semibold ${statusBadge(p.status)}`}>
+                      <td className="border-b px-6 py-4">
+                        <span
+                          className={`px-3 py-1 rounded-full font-semibold ${statusBadge(
+                            p.status
+                          )}`}
+                        >
                           {String(p.status || "active").toUpperCase()}
                         </span>
                       </td>
-                      <td className="border-b px-4 py-4 underline">
+                      <td className="border-b px-6 py-4 underline">
                         <Link to={`/admin/editproduct/${p.id}`}>Edit</Link>
                       </td>
                     </tr>

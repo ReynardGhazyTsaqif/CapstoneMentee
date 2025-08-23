@@ -25,6 +25,8 @@ export default function AdminDashboard() {
       try {
         const res = await api.get("/dashboard/recent-users");
         console.log("📌 Response:", res.data); // debug
+        console.log("📌 Response full:", res.data);
+        console.log("📌 Apakah array?:", Array.isArray(res.data));
 
         // ✅ langsung array
         setUsers(Array.isArray(res.data) ? res.data : []);
