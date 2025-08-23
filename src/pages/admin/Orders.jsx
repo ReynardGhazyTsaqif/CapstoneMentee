@@ -374,7 +374,8 @@ function Orders() {
                   </span>
                 </td>
                 <td className="border-b border-gray-200 px-8 py-6 underline">
-                  <Link to={`/admin/editorder/${order.id}`}>Detail</Link>
+                  <Link to={`/admin/detailorder`}>Detail</Link>
+                  {/* /${order.id} */}
                 </td>
                 
               </tr>

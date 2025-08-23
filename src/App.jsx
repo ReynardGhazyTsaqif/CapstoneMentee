@@ -23,6 +23,11 @@ import Products from './pages/admin/Products';
 import Users from './pages/admin/Users';
 import Analytics from './pages/admin/Analytics';
 import Orders from './pages/admin/Orders';
+import DetailOrder from "./pages/admin/DetailOrder";
+import DetailUser from "./pages/admin/DetailUser";
+import Category from "./pages/admin/Category";
+import AddCategory from "./pages/admin/AddCategory";
+import EditCategory from "./pages/admin/EditCategory";
 import AddProduct from './pages/admin/AddProduct';
 import EditProduct from './pages/admin/EditProduct';
 
@@ -50,8 +55,13 @@ export default function App() {
       <Route path="/admin/dashboard" element={<AdminDashboard />} />
       <Route path="/admin/products" element={<Products />} />
       <Route path="/admin/users" element={<Users />} />
+      <Route path="/admin/detailusers" element={<DetailUser />} />
       <Route path="/admin/analytics" element={<Analytics />} />
       <Route path="/admin/orders" element={<Orders />} />
+      <Route path="/admin/detailorder" element={<DetailOrder />} />
+      <Route path="/admin/category" element={<Category />} />
+      <Route path="/admin/addcategory" element={<AddCategory />} />
+      <Route path="/admin/editcategory/:id" element={<EditCategory />} />
       <Route path="/admin/addproduct" element={<AddProduct />} />
       <Route path="/admin/editproduct" element={<EditProduct />} />
 

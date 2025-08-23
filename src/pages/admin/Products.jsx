@@ -71,6 +71,7 @@ function Products() {
       })),
     };
   };
+  
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -138,6 +139,7 @@ function Products() {
     fetchProducts();
   }, []);
 
+  
   const statusBadge = (status) => {
     const st = (status || "").toString().toLowerCase();
     if (st === "inactive" || st === "draft") return "bg-gray-100 text-gray-600";
@@ -221,7 +223,7 @@ function Products() {
                             className="w-12 h-12 object-cover rounded"
                           />
                         ) : (
-                          <div className="w-12 h-12 rounded" />
+                          <div className="w-24 h-24 rounded" />
                         )}
                       </td>
                       <td className="border-b px-6 py-4">{p.brand}</td>

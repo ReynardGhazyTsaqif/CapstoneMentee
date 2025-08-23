@@ -23,6 +23,20 @@ function Users() {
     fetchUsers();
   }, []);
 
+  const toggleBlockUser = async (userId, currentStatus) => {
+    try {
+      const newStatus = currentStatus === "blocked" ? "active" : "blocked";
+      await api.patch(`/users/${userId}/status`, { status: newStatus });
+
+      // Update state lokal agar tabel langsung berubah
+      setUsers((prev) =>
+        prev.map((u) => (u.id === userId ? { ...u, status: newStatus } : u))
+      );
+    } catch (err) {
+      console.error("❌ Gagal update status user:", err);
+    }
+  };
+
   return (
     <AdminLayout>
       <h1 className="shadow-md font-semibold py-5 pl-5 text-4xl">
@@ -74,10 +88,17 @@ function Users() {
                     {new Date(user.createdAt).toLocaleDateString("id-ID")}
                   </td>
                   <td className="border-b border-gray-200 px-8 py-6">-</td>
-                  <td className="border-b border-gray-200 px-8 py-6">-</td>
+                  <td className="border-b border-gray-200 px-8 py-6"><button
+    onClick={() => toggleBlockUser(user.id, user.is_blocked)}
+    className={`px-4 py-2 rounded text-white ${
+      user.is_blocked ? "bg-green-600" : "bg-red-600"
+    }`}
+  >
+    {user.is_blocked ? "Unblock" : "Block"}
+  </button></td>
                   
                   <td className="border-b border-gray-200 px-8 py-6 underline">
-                    <Link to="/admin/editproduct">Detail</Link>
+                    <Link to="/admin/detailusers">Detail</Link>
                   </td>
                 </tr>
               ))

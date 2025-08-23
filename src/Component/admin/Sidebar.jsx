@@ -8,6 +8,7 @@ import {
   Package,
   PieChartIcon,
   Users,
+  LayoutGrid
 } from "lucide-react";
 
 export default function Sidebar() {
@@ -23,6 +24,7 @@ export default function Sidebar() {
     { to: "/admin/orders", icon: <Package />, label: "Order Management" },
     { to: "/admin/analytics", icon: <PieChartIcon />, label: "Analytics" },
     { to: "/admin/users", icon: <Users />, label: "Users Management" },
+    { to: "/admin/category", icon: <LayoutGrid />, label: "Category Management" },
   ];
 
   return (
