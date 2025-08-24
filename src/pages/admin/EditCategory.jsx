@@ -103,8 +103,8 @@ function EditCategory() {
             className="w-8/12 text-xl mb-6 pl-6 pr-4 py-4 border rounded-3xl focus:outline-none"
           >
             <option value="">-- Pilih Status --</option>
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
+            <option value="Active">Active</option>
+            <option value="Inactive">Inactive</option>
           </select>
         </div>
 

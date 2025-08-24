@@ -8,27 +8,42 @@ function Products() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  
+
   const itemsPerPage = 10;
-  
 
   // Normalizer agar nama field konsisten (brand/name/price/description/color/materialAtas/materialSol/sku/tipe/status/images/sizes)
   const normalizeProduct = (raw) => {
     const imagesArr = Array.isArray(raw?.images)
       ? raw.images
+      : Array.isArray(raw?.imageGallery)
+      ? raw.imageGallery
       : raw?.image
       ? [raw.image]
       : [];
 
-
     const fixedImages = imagesArr
-      .map((img) =>
-        img
-          ? img.startsWith("http")
-            ? img
-            : `${import.meta.env.VITE_API_BASE_URL}/${img.replace(/^\/+/, "")}`
-          : null
-      )
+      .map((img) => {
+        if (!img) return null;
+
+        // kalau sudah absolute http(s)
+        if (img.startsWith("http")) {
+          try {
+            const url = new URL(img);
+            // selalu pakai host dari .env
+            return `${import.meta.env.VITE_API_BASE_URL}${url.pathname.replace(
+              /\\/g,
+              "/"
+            )}`;
+          } catch {
+            return img;
+          }
+        }
+
+        // kalau relative path
+        return `${import.meta.env.VITE_API_BASE_URL}/${img
+          .replace(/^\/+/, "")
+          .replace(/\\/g, "/")}`;
+      })
       .filter(Boolean);
 
     const sizesArr = Array.isArray(raw?.sizes)
@@ -63,7 +78,6 @@ function Products() {
       tipe: raw.type?.name ?? raw.tipe ?? raw.kategori ?? "",
       status: raw.status ?? "active",
       images: fixedImages,
-      // dukung bentuk variants seperti: [{size:40, stock:10}, {size:41, stock:15}]
       sizes: sizesArr.map((v, i) => ({
         size: v.size ?? v.ukuran ?? v.label ?? `Var-${i + 1}`,
         stock: Number(v.stock ?? v.stok ?? 0),
@@ -71,7 +85,6 @@ function Products() {
       })),
     };
   };
-  
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -109,6 +122,8 @@ function Products() {
               ].filter(Boolean);
 
               console.log("Final Images for product:", merged.name, images);
+              console.log("🔍 Images untuk", p.name, p.images);
+
               const sizesMap = new Map();
               [...(base.sizes || []), ...(merged.sizes || [])].forEach((s) => {
                 const key = `${s.size}`;
@@ -139,7 +154,6 @@ function Products() {
     fetchProducts();
   }, []);
 
-  
   const statusBadge = (status) => {
     const st = (status || "").toString().toLowerCase();
     if (st === "inactive" || st === "draft") return "bg-gray-100 text-gray-600";
@@ -196,7 +210,7 @@ function Products() {
           <table className="w-full border-collapse border border-gray-200 min-w-[1200px]">
             <thead className="bg-gray-200 uppercase">
               <tr>
-                <th className="border-b px-6 py-3">Foto</th>
+                <th className="border-b px-24 py-3">Foto</th>
                 <th className="border-b px-6 py-3">Brand</th>
                 <th className="border-b px-6 py-3">Nama</th>
                 <th className="border-b px-6 py-3">Harga</th>
@@ -217,15 +231,21 @@ function Products() {
                     <tr key={p.id}>
                       <td className="border-b px-6 py-4">
                         {p.images && p.images.length > 0 ? (
-                          <img
-                            src={p.images[0]}
-                            alt={p.name}
-                            className="w-12 h-12 object-cover rounded"
-                          />
+                          <div className="flex gap-2">
+                            {p.images.map((img, index) => (
+                              <img
+                                key={index}
+                                src={img}
+                                alt={`${p.name} ${index + 1}`}
+                                className="w-16 h-16 object-cover rounded"
+                              />
+                            ))}
+                          </div>
                         ) : (
-                          <div className="w-24 h-24 rounded" />
+                          <p className="text-gray-400">Tidak ada gambar</p>
                         )}
                       </td>
+
                       <td className="border-b px-6 py-4">{p.brand}</td>
                       <td className="border-b px-6 py-4 font-medium">
                         {p.name}

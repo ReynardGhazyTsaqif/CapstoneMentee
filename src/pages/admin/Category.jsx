@@ -1,18 +1,18 @@
 import AdminLayout from "../../Component/admin/AdminLayout";
 import { Link } from "react-router-dom";
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
 import api from "../../api/axios";
 
 function Category() {
   const [isOpen, setIsOpen] = useState(null); // bedakan dropdown tiap row
-  const dropdownRef = useRef(null);
+
   const [categories, setCategories] = useState([]); // ✅ state kategori
   const [loading, setLoading] = useState(true);
 
   // Ambil data kategori dari BE
   const fetchCategories = async () => {
     try {
-      const res = await api.get("/types"); // ✅ GET /api/types
+      const res = await api.get("/types/all"); // ✅ GET /api/types
       console.log("📌 Data kategori:", res.data);
       setCategories(res.data); // sesuaikan dengan format BE kamu
     } catch (err) {
@@ -29,7 +29,7 @@ function Category() {
   // Tutup dropdown kalau klik di luar
   useEffect(() => {
     function handleClickOutside(event) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+      if (!event.target.closest(".dropdown-menu")) {
         setIsOpen(null);
       }
     }
@@ -45,9 +45,22 @@ function Category() {
     );
   }
 
+  const handleDelete = async (id) => {
+    if (!window.confirm("Yakin ingin menghapus kategori ini?")) return;
+
+    try {
+      await api.delete(`/types/${id}`); // ✅ DELETE /api/types/:id
+      alert("Kategori berhasil dihapus");
+      // Refresh data
+      setCategories((prev) => prev.filter((cat) => cat.id !== id));
+    } catch (err) {
+      console.error("❌ Gagal hapus kategori:", err);
+      alert("Terjadi kesalahan saat menghapus kategori");
+    }
+  };
 
   return (
-     <AdminLayout>
+    <AdminLayout>
       <h1 className="shadow-md font-semibold py-5 pl-5 text-4xl">
         Category Management
       </h1>
@@ -61,7 +74,7 @@ function Category() {
         </Link>
       </div>
 
-      <div className="shadow-md mx-8">
+      <div className="shadow-md mx-8 mb-24">
         <table className="w-full border-collapse border border-gray-200">
           <thead className="bg-gray-200 uppercase">
             <tr>
@@ -84,10 +97,7 @@ function Category() {
                   {cat.status}
                 </td>
                 <td className="border-b border-gray-200 px-16 py-6">
-                  <div
-                    className="relative flex justify-end"
-                    ref={dropdownRef}
-                  >
+                  <div className="relative flex justify-end dropdown-menu">
                     <button
                       onClick={() =>
                         setIsOpen(isOpen === cat.id ? null : cat.id)
@@ -109,7 +119,7 @@ function Category() {
                         </li>
                         <li>
                           <button
-                            onClick={() => alert(`Hapus kategori ${cat.id}`)}
+                            onClick={() => handleDelete(cat.id)}
                             className="block w-full text-left px-4 py-2 hover:bg-gray-100 text-red-600 rounded-b-lg"
                           >
                             Hapus

@@ -2,12 +2,13 @@ import AdminLayout from "../../Component/admin/AdminLayout";
 import React, { useRef, useState } from "react";
 import { FileText, Plus, Trash2 } from "lucide-react";
 import api from "../../api/axios";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 function AddProduct() {
+  const navigate = useNavigate();
   const fileInputRef = useRef(null);
   const [files, setFiles] = useState([]);
-  const [specifications, setSpecifications] = useState([{ key: "", value: "" }]);
+  
   const [sizes, setSizes] = useState([{ variantId: 1, size: "", stock: "" }]);
   const [formData, setFormData] = useState({
     name: "",
@@ -16,14 +17,18 @@ function AddProduct() {
     price: "",
     tipe: "",
     status: "",
+    color: "",
+    sku: "",
+    materialAtas: "",
+    materialSol: "",
   });
 
   const handleClick = () => fileInputRef.current.click();
 
   const handleChange = (e) => {
     const selectedFiles = Array.from(e.target.files).slice(0, 3); // maksimal 3 file
-    const filteredFiles = selectedFiles.filter(file =>
-      file.type === "image/png" || file.type === "image/jpeg"
+    const filteredFiles = selectedFiles.filter(
+      (file) => file.type === "image/png" || file.type === "image/jpeg"
     );
     setFiles(filteredFiles);
   };
@@ -33,14 +38,7 @@ function AddProduct() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
 
   // Specifications
-  const handleSpecChange = (index, field, value) => {
-    const updated = [...specifications];
-    updated[index][field] = value;
-    setSpecifications(updated);
-  };
-  const addSpecification = () => setSpecifications([...specifications, { key: "", value: "" }]);
-  const removeSpecification = (index) =>
-    setSpecifications(specifications.filter((_, i) => i !== index));
+  
 
   // Sizes
   const handleSizeChange = (index, field, value) => {
@@ -56,35 +54,33 @@ function AddProduct() {
   const handleSubmit = async () => {
     try {
       const dataToSend = new FormData();
-      dataToSend.append("name", formData.name);
-      dataToSend.append("brand", formData.brand);
-      dataToSend.append("description", formData.description);
-      dataToSend.append("price", formData.price);
-      dataToSend.append("tipe", formData.tipe);
-      dataToSend.append("status", formData.status);
 
-      specifications.forEach((spec, i) => {
-        if (spec.key && spec.value) {
-          dataToSend.append(`specifications[${i}][key]`, spec.key);
-          dataToSend.append(`specifications[${i}][value]`, spec.value);
-        }
+      // field utama
+      Object.keys(formData).forEach((key) => {
+        dataToSend.append(key, formData[key]);
       });
 
+      // specifications → JSON
+      
+
+      // sizes
       sizes.forEach((s, i) => {
         dataToSend.append(`sizes[${i}][variantId]`, s.variantId);
         dataToSend.append(`sizes[${i}][size]`, s.size);
         dataToSend.append(`sizes[${i}][stock]`, s.stock);
       });
 
+      // images
       files.forEach((file) => dataToSend.append("images", file));
 
-      // POST ke ngrok backend
+      // POST ke backend
       const res = await api.post("/products", dataToSend, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
       console.log("✅ Produk berhasil ditambahkan:", res.data);
       alert("Produk berhasil ditambahkan!");
+      navigate("/admin/products");
     } catch (error) {
       console.error("❌ Gagal menambahkan produk:", error);
       alert("Gagal menambahkan produk!");
@@ -106,7 +102,7 @@ function AddProduct() {
             name="name"
             value={formData.name}
             onChange={handleInputChange}
-            className="w-8/12 text-xl mb-6 pl-6 pr-4 py-4 border rounded-3xl focus:outline-none"
+            className="w-8/12 text-xl mb-6 pl-6 pr-4 py-4 border rounded-3xl"
             placeholder="Masukkan nama produk"
           />
 
@@ -117,8 +113,52 @@ function AddProduct() {
             name="brand"
             value={formData.brand}
             onChange={handleInputChange}
-            className="w-8/12 text-xl mb-6 pl-6 pr-4 py-4 border rounded-3xl focus:outline-none"
+            className="w-8/12 text-xl mb-6 pl-6 pr-4 py-4 border rounded-3xl"
             placeholder="Masukkan brand produk"
+          />
+
+          {/* SKU */}
+          <label className="block text-xl font-semibold mb-3">Kode SKU</label>
+          <input
+            type="text"
+            name="sku"
+            value={formData.sku}
+            onChange={handleInputChange}
+            className="w-8/12 text-xl mb-6 pl-6 pr-4 py-4 border rounded-3xl"
+            placeholder="Masukkan kode SKU produk"
+          />
+
+          {/* Warna */}
+          <label className="block text-xl font-semibold mb-3">Warna</label>
+          <input
+            type="text"
+            name="color"
+            value={formData.color}
+            onChange={handleInputChange}
+            className="w-8/12 text-xl mb-6 pl-6 pr-4 py-4 border rounded-3xl"
+            placeholder="Masukkan warna produk"
+          />
+
+          {/* Material Atas */}
+          <label className="block text-xl font-semibold mb-3">Material Atas</label>
+          <input
+            type="text"
+            name="materialAtas"
+            value={formData.materialAtas}
+            onChange={handleInputChange}
+            className="w-8/12 text-xl mb-6 pl-6 pr-4 py-4 border rounded-3xl"
+            placeholder="Masukkan material atas"
+          />
+
+          {/* Material Sol */}
+          <label className="block text-xl font-semibold mb-3">Material Sol</label>
+          <input
+            type="text"
+            name="materialSol"
+            value={formData.materialSol}
+            onChange={handleInputChange}
+            className="w-8/12 text-xl mb-6 pl-6 pr-4 py-4 border rounded-3xl"
+            placeholder="Masukkan material sol"
           />
 
           {/* Deskripsi */}
@@ -127,7 +167,7 @@ function AddProduct() {
             name="description"
             value={formData.description}
             onChange={handleInputChange}
-            className="w-8/12 text-xl mb-6 pl-6 pr-4 py-4 border rounded-3xl focus:outline-none"
+            className="w-8/12 text-xl mb-6 pl-6 pr-4 py-4 border rounded-3xl"
             placeholder="Masukkan deskripsi produk"
           />
 
@@ -138,7 +178,7 @@ function AddProduct() {
             name="price"
             value={formData.price}
             onChange={handleInputChange}
-            className="w-8/12 text-xl mb-6 pl-6 pr-4 py-4 border rounded-3xl focus:outline-none"
+            className="w-8/12 text-xl mb-6 pl-6 pr-4 py-4 border rounded-3xl"
             placeholder="Masukkan harga produk"
           />
 
@@ -148,12 +188,11 @@ function AddProduct() {
             name="tipe"
             value={formData.tipe}
             onChange={handleInputChange}
-            className="w-8/12 text-xl mb-6 pl-6 pr-4 py-4 border rounded-3xl focus:outline-none"
+            className="w-8/12 text-xl mb-6 pl-6 pr-4 py-4 border rounded-3xl"
           >
             <option value="">-- Pilih Kategori --</option>
             <option value="sneakers">Sneakers</option>
             <option value="running">Running</option>
-            
           </select>
 
           {/* Status */}
@@ -162,44 +201,16 @@ function AddProduct() {
             name="status"
             value={formData.status}
             onChange={handleInputChange}
-            className="w-8/12 text-xl mb-6 pl-6 pr-4 py-4 border rounded-3xl focus:outline-none"
+            className="w-8/12 text-xl mb-6 pl-6 pr-4 py-4 border rounded-3xl"
           >
             <option value="">-- Pilih Status --</option>
             <option value="active">Active</option>
             <option value="inactive">Inactive</option>
           </select>
 
-          {/* Specifications */}
-          <label className="block text-xl font-semibold mb-3">Spesifikasi</label>
-          {specifications.map((spec, index) => (
-            <div key={index} className="flex gap-3 mb-4 items-center w-8/12">
-              <input
-                type="text"
-                placeholder="Nama Spesifikasi"
-                value={spec.key}
-                onChange={(e) => handleSpecChange(index, "key", e.target.value)}
-                className="flex-1 text-xl pl-4 py-3 border rounded-2xl"
-              />
-              <input
-                type="text"
-                placeholder="Isi Spesifikasi"
-                value={spec.value}
-                onChange={(e) => handleSpecChange(index, "value", e.target.value)}
-                className="flex-1 text-xl pl-4 py-3 border rounded-2xl"
-              />
-              <button onClick={() => removeSpecification(index)} className="p-2 text-red-500">
-                <Trash2 />
-              </button>
-            </div>
-          ))}
-          <button
-            onClick={addSpecification}
-            className="mb-6 px-4 py-2 bg-gray-200 rounded-lg flex items-center gap-2"
-          >
-            <Plus className="w-4 h-4" /> Tambah Spesifikasi
-          </button>
+          
 
-          {/* Sizes & Stock */}
+          {/* Sizes */}
           <label className="block text-xl font-semibold mb-3">Size & Stok</label>
           {sizes.map((s, index) => (
             <div key={index} className="flex gap-3 mb-4 items-center w-8/12">
@@ -217,12 +228,17 @@ function AddProduct() {
                 onChange={(e) => handleSizeChange(index, "stock", e.target.value)}
                 className="flex-1 text-xl pl-4 py-3 border rounded-2xl"
               />
-              <button onClick={() => removeSize(index)} className="p-2 text-red-500">
+              <button
+                type="button"
+                onClick={() => removeSize(index)}
+                className="p-2 text-red-500"
+              >
                 <Trash2 />
               </button>
             </div>
           ))}
           <button
+            type="button"
             onClick={addSize}
             className="mb-6 px-4 py-2 bg-gray-200 rounded-lg flex items-center gap-2"
           >
@@ -240,13 +256,12 @@ function AddProduct() {
             onChange={handleChange}
             className="hidden"
           />
-
           <div
             onClick={handleClick}
-            className="w-full h-64 border-2 border-dashed border-gray-400 rounded-lg p-6 flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50 transition"
+            className="w-full h-64 border-2 border-dashed border-gray-400 rounded-lg p-6 flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50"
           >
             <div className="bg-gray-200 p-4 rounded-lg flex items-center justify-center">
-              <FileText className="w-8 h-8 " />
+              <FileText className="w-8 h-8" />
             </div>
             <p className=" text-gray-800 font-medium text-xl mt-4">
               Klik disini untuk upload foto produk
@@ -272,7 +287,10 @@ function AddProduct() {
 
         {/* Tombol */}
         <div className="my-6 flex justify-between px-32">
-          <Link to="/admin/products" className="w-4/12 py-4 px-6  text-xl border rounded-2xl">
+          <Link
+            to="/admin/products"
+            className="w-4/12 py-4 px-6 text-xl border rounded-2xl text-center"
+          >
             Batalkan
           </Link>
           <button
