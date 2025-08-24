@@ -11,26 +11,25 @@ function Users() {
     const fetchUsers = async () => {
       try {
         const res = await api.get("/dashboard/recent-users");
-        console.log("📌 Response:", res.data);
-
         setUsers(Array.isArray(res.data) ? res.data : []);
       } catch (err) {
         console.error("❌ Error fetching users:", err);
         setUsers([]);
       }
     };
-
     fetchUsers();
   }, []);
 
-  const toggleBlockUser = async (userId, currentStatus) => {
+  const toggleBlockUser = async (userId, isBlocked) => {
     try {
-      const newStatus = currentStatus === "blocked" ? "active" : "blocked";
+      const newStatus = isBlocked ? "active" : "blocked";
       await api.patch(`/users/${userId}/status`, { status: newStatus });
 
-      // Update state lokal agar tabel langsung berubah
+      // Update state agar langsung terlihat
       setUsers((prev) =>
-        prev.map((u) => (u.id === userId ? { ...u, status: newStatus } : u))
+        prev.map((u) =>
+          u.id === userId ? { ...u, is_blocked: !isBlocked } : u
+        )
       );
     } catch (err) {
       console.error("❌ Gagal update status user:", err);
@@ -43,7 +42,7 @@ function Users() {
         User Management
       </h1>
 
-      {/* Search + Button */}
+      {/* Search */}
       <div className="flex items-center w-full my-16">
         <div className="relative flex-grow text-black rounded-xl ml-5">
           <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
@@ -51,33 +50,40 @@ function Users() {
           </div>
           <input
             type="text"
-            placeholder="Cari User"
+            placeholder="Cari Order ID atau nama customer"
             className="w-8/12 text-xl pl-16 pr-4 py-4 border placeholder-gray-400 rounded-3xl focus:outline-none"
           />
         </div>
-
-        
       </div>
 
       {/* Table */}
-      <div className="ml-5 mr-24 shadow-md">
+      <div className="ml-5 mr-24 shadow-md overflow-hidden rounded-xl">
         <table className="w-full border-collapse border border-gray-200">
           <thead className="bg-gray-200 uppercase">
             <tr>
-              <th className="border-b font-semibold text-left px-8 py-3">Nama</th>
-              <th className="border-b font-semibold text-left px-8 py-3">Email</th>
-              <th className="border-b font-semibold text-left px-8 py-3">Tanggal Join</th>
-              <th className="border-b font-semibold text-left px-8 py-3">Total Order</th>
-              <th className="border-b font-semibold text-left px-8 py-3"></th>
+              <th className="border-b font-semibold text-left px-8 py-3">
+                Nama
+              </th>
+              <th className="border-b font-semibold text-left px-8 py-3">
+                Email
+              </th>
+              <th className="border-b font-semibold text-left px-8 py-3">
+                Tanggal Join
+              </th>
               
-              <th className="border-b font-semibold text-left px-8 py-3"></th>
+              <th className="border-b font-semibold text-left px-8 py-3">
+                Status
+              </th>
+              <th className="border-b font-semibold text-left px-8 py-3">
+                Aksi
+              </th>
             </tr>
           </thead>
 
           <tbody>
             {users.length > 0 ? (
               users.map((user) => (
-                <tr key={user.id}>
+                <tr key={user.id} className="hover:bg-gray-50">
                   <td className="border-b border-gray-200 px-8 py-6">
                     {user.fullName}
                   </td>
@@ -87,18 +93,28 @@ function Users() {
                   <td className="border-b border-gray-200 px-8 py-6">
                     {new Date(user.createdAt).toLocaleDateString("id-ID")}
                   </td>
-                  <td className="border-b border-gray-200 px-8 py-6">-</td>
-                  <td className="border-b border-gray-200 px-8 py-6"><button
-    onClick={() => toggleBlockUser(user.id, user.is_blocked)}
-    className={`px-4 py-2 rounded text-white ${
-      user.is_blocked ? "bg-green-600" : "bg-red-600"
-    }`}
-  >
-    {user.is_blocked ? "Unblock" : "Block"}
-  </button></td>
                   
-                  <td className="border-b border-gray-200 px-8 py-6 underline">
-                    <Link to="/admin/detailusers">Detail</Link>
+                  <td className="border-b border-gray-200 px-8 py-6">
+                    {/* Toggle Switch */}
+                    <label className="inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={!user.is_blocked}
+                        onChange={() =>
+                          toggleBlockUser(user.id, user.is_blocked)
+                        }
+                        className="sr-only peer"
+                      />
+                      <div className="relative w-14 h-7 bg-gray-300 rounded-full peer-checked:bg-green-500 transition">
+                        <span className="absolute left-1 top-1 w-5 h-5 bg-white rounded-full transition-all peer-checked:translate-x-7"></span>
+                      </div>
+                      <span className="ml-3 text-sm">
+                        {user.is_blocked ? "Blocked" : "Active"}
+                      </span>
+                    </label>
+                  </td>
+                  <td className="border-b border-gray-200 px-8 py-6 underline text-blue-600">
+                    <Link to={`/admin/detailusers/${user.id}`}>Detail</Link>
                   </td>
                 </tr>
               ))
