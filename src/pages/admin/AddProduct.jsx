@@ -1,5 +1,5 @@
 import AdminLayout from "../../Component/admin/AdminLayout";
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { FileText, Plus, Trash2 } from "lucide-react";
 import api from "../../api/axios";
 import { Link, useNavigate } from "react-router-dom";
@@ -8,6 +8,21 @@ function AddProduct() {
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
   const [files, setFiles] = useState([]);
+  const [types, setTypes] = useState([]);
+
+  useEffect(() => {
+  const fetchTypes = async () => {
+    try {
+      const res = await api.get("/types");
+      setTypes(res.data); // asumsi respons array of types
+    } catch (err) {
+      console.error("❌ Gagal fetch types:", err);
+    }
+  };
+  fetchTypes();
+}, []);
+
+
   
   const [sizes, setSizes] = useState([{ variantId: 1, size: "", stock: "" }]);
   const [formData, setFormData] = useState({
@@ -52,40 +67,41 @@ function AddProduct() {
 
   // Submit
   const handleSubmit = async () => {
-    try {
-      const dataToSend = new FormData();
+  try {
+    const dataToSend = new FormData();
 
-      // field utama
-      Object.keys(formData).forEach((key) => {
-        dataToSend.append(key, formData[key]);
-      });
+    // field utama sesuai BE
+    dataToSend.append("name", formData.name);
+    dataToSend.append("brand", formData.brand);
+    dataToSend.append("description", formData.description);
+    dataToSend.append("price", formData.price);
+    dataToSend.append("typeId", formData.tipe);   // sesuai BE
+    dataToSend.append("color", formData.color);
+    dataToSend.append("Material Atas", formData.materialAtas);
+    dataToSend.append("Material Sol", formData.materialSol);
+    dataToSend.append("Kode SKU", formData.sku);
 
-      // specifications → JSON
-      
+    // variants → kirim JSON
+    dataToSend.append("variants", JSON.stringify(
+      sizes.map(s => ({ size: s.size, stock: s.stock }))
+    ));
 
-      // sizes
-      sizes.forEach((s, i) => {
-        dataToSend.append(`sizes[${i}][variantId]`, s.variantId);
-        dataToSend.append(`sizes[${i}][size]`, s.size);
-        dataToSend.append(`sizes[${i}][stock]`, s.stock);
-      });
+    // images
+    files.forEach((file) => dataToSend.append("images", file));
 
-      // images
-      files.forEach((file) => dataToSend.append("images", file));
+    const res = await api.post("/products", dataToSend, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
 
-      // POST ke backend
-      const res = await api.post("/products", dataToSend, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+    console.log("✅ Produk berhasil ditambahkan:", res.data);
+    alert("Produk berhasil ditambahkan!");
+    navigate("/admin/products");
+  } catch (error) {
+    console.error("❌ Gagal menambahkan produk:", error);
+    alert("Gagal menambahkan produk!");
+  }
+};
 
-      console.log("✅ Produk berhasil ditambahkan:", res.data);
-      alert("Produk berhasil ditambahkan!");
-      navigate("/admin/products");
-    } catch (error) {
-      console.error("❌ Gagal menambahkan produk:", error);
-      alert("Gagal menambahkan produk!");
-    }
-  };
 
   return (
     <AdminLayout>
@@ -182,18 +198,22 @@ function AddProduct() {
             placeholder="Masukkan harga produk"
           />
 
-          {/* Kategori */}
-          <label className="block text-xl font-semibold mb-3">Kategori</label>
-          <select
-            name="tipe"
-            value={formData.tipe}
-            onChange={handleInputChange}
-            className="w-8/12 text-xl mb-6 pl-6 pr-4 py-4 border rounded-3xl"
-          >
-            <option value="">-- Pilih Kategori --</option>
-            <option value="sneakers">Sneakers</option>
-            <option value="running">Running</option>
-          </select>
+          {/* Tipe */}
+          <label className="block text-xl font-semibold mb-3">Tipe</label>
+<select
+  name="tipe"
+  value={formData.tipe}
+  onChange={handleInputChange}
+  className="w-8/12 text-xl mb-6 pl-6 pr-4 py-4 border rounded-3xl"
+>
+  <option value="">-- Pilih tipe --</option>
+  {types.map((t) => (
+    <option key={t.id} value={t.id}>
+      {t.name}
+    </option>
+  ))}
+</select>
+
 
           {/* Status */}
           <label className="block text-xl font-semibold mb-3">Status</label>
@@ -204,8 +224,8 @@ function AddProduct() {
             className="w-8/12 text-xl mb-6 pl-6 pr-4 py-4 border rounded-3xl"
           >
             <option value="">-- Pilih Status --</option>
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
+            <option value="Active">Active</option>
+            <option value="Inactive">Inactive</option>
           </select>
 
           

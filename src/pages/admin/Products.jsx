@@ -113,19 +113,14 @@ function Products() {
               const base = normalizeProduct(p);
               // (opsional) ambil detail
               const detRes = await api.get(`/products/${base.id}`);
-              const merged = { ...base, ...normalizeProduct(detRes.data) };
+              const merged = normalizeProduct(detRes.data);
 
-              // Gabungkan images & sizes (unik)
-              const images = [
-                ...(base.images || []),
-                ...(merged.images || []),
-              ].filter(Boolean);
+              // Hindari duplikasi image
+              const images = merged.images || [];
 
-              console.log("Final Images for product:", merged.name, images);
-              console.log("🔍 Images untuk", p.name, p.images);
-
+              // Merge sizes biar unik
               const sizesMap = new Map();
-              [...(base.sizes || []), ...(merged.sizes || [])].forEach((s) => {
+              (merged.sizes || []).forEach((s) => {
                 const key = `${s.size}`;
                 if (!sizesMap.has(key)) sizesMap.set(key, s);
               });
