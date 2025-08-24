@@ -6,16 +6,12 @@ import { useAuth } from "../../context/AuthContext";
 
 export default function Login() {
   const { login } = useAuth();
-
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-  });
+  const [formData, setFormData] = useState({ email: "", password: "" });
   const [rememberMe, setRememberMe] = useState(false);
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
-
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -30,24 +26,26 @@ export default function Login() {
     try {
       const response = await api.post("/auth/login", formData);
 
-      // respons dari server berupa token dan data user
-      if (response.data.token && response.data.user) {
-        // Panggil fungsi 'login' dari context untuk menyimpan state secara global
-        login(response.data.token, response.data.user);
+      if (response.data.accessToken && response.data.user) {
+        // Panggil fungsi 'login' dari context
+        login(
+          response.data.accessToken,
+          response.data.refreshToken,
+          response.data.user
+        );
 
-        // Arahkan pengguna berdasarkan role mereka
+        // Arahkan pengguna berdasarkan role
         if (response.data.user.role === "admin") {
-          navigate("/admin/productlist"); // Arahkan admin ke daftar produk
+          navigate("/admin/productlist");
         } else {
-          navigate("/"); // Arahkan user biasa ke homepage
+          navigate("/homepage");
         }
       } else {
         setError("Respons dari server tidak valid.");
       }
     } catch (err) {
       const errorMessage =
-        err.response?.data?.message ||
-        "Email atau password salah. Silakan coba lagi.";
+        err.response?.data?.message || "Email atau password salah.";
       setError(errorMessage);
     } finally {
       setLoading(false);

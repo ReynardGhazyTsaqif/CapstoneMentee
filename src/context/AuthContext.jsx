@@ -5,8 +5,10 @@ const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
-  const [token, setToken] = useState(() => localStorage.getItem("authToken"));
+  // State sekarang untuk accessToken
+  const [token, setToken] = useState(() => localStorage.getItem("accessToken"));
   const [isLoading, setIsLoading] = useState(true);
+
   useEffect(() => {
     const fetchUser = async () => {
       if (token) {
@@ -14,31 +16,37 @@ export function AuthProvider({ children }) {
           const response = await api.get("/users/profile");
           setUser(response.data);
         } catch (error) {
-          console.error("Gagal memvalidasi token, logout...", error);
-          logout(); // Jika token tidak valid, logout
+          console.error("Token tidak valid, sesi dihapus.", error);
+          logout();
         }
       }
-
       setIsLoading(false);
     };
     fetchUser();
   }, [token]);
 
-  const login = (newToken, userData) => {
-    localStorage.setItem("authToken", newToken);
-    setToken(newToken);
+  // Fungsi login sekarang menerima kedua token
+  const login = (newAccessToken, newRefreshToken, userData) => {
+    localStorage.setItem("accessToken", newAccessToken);
+    localStorage.setItem("refreshToken", newRefreshToken);
+    setToken(newAccessToken);
     setUser(userData);
   };
 
   const logout = () => {
-    localStorage.removeItem("authToken");
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("refreshToken");
     setToken(null);
     setUser(null);
   };
 
-  const isAuthenticated = !!token;
-
-  const value = { isAuthenticated, user, isLoading, login, logout };
+  const value = {
+    isAuthenticated: !!token,
+    user,
+    isLoading,
+    login,
+    logout,
+  };
 
   return (
     <AuthContext.Provider value={value}>
@@ -48,5 +56,9 @@ export function AuthProvider({ children }) {
 }
 
 export const useAuth = () => {
-  return useContext(AuthContext);
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error("useAuth must be used within an AuthProvider");
+  }
+  return context;
 };

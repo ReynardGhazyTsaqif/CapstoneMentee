@@ -5,11 +5,13 @@ import api from "../../api/axios";
 
 import Card from "../../components/CardShoes";
 import { Link } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 
 export default function Homepage() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const { isAuthenticated } = useAuth();
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -84,23 +86,17 @@ export default function Homepage() {
               {!loading && !error && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 px-4 gap-6">
                   {products.map((product) => {
-                    const imageUrl =
-                      product.images && product.images.length > 0
-                        ? product.images[0].image_url
-                        : "https://placehold.co/400x300/e2e8f0/333?text=No+Image";
-
-                    const cleanImageUrl = imageUrl.replace(
-                      /([^:]\/)\/+/g,
-                      "$1"
-                    );
+                    const imageUrl = product.image
+                      ? `${import.meta.env.VITE_API_BASE_URL}/${product.image}`
+                      : "https://placehold.co/400x300/e2e8f0/333?text=No+Image";
 
                     return (
                       <Link key={product.id} to={`/kategori/${product.id}`}>
                         <Card
-                          imageUrl={cleanImageUrl}
+                          imageUrl={imageUrl}
                           name={product.name}
                           description={product.description}
-                          rating={product.rating || "N/A"}
+                          rating={`${product.rating}/5`}
                           price={`Rp${product.price.toLocaleString("id-ID")}`}
                         />
                       </Link>
@@ -111,7 +107,7 @@ export default function Homepage() {
             </div>
             {/* End of Card Section */}
 
-            <Link to="/kategori">
+            <Link to={isAuthenticated ? `/kategori` : `/kategoripublic`}>
               {" "}
               <div className="flex justify-center items-center py-20">
                 <button className="border-black border-2 font-medium w-3/5 md:w-1/4 text-black px-6 py-2.5 rounded-2xl hover:bg-black hover:text-white transition-colors">

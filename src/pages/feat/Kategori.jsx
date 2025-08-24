@@ -3,6 +3,8 @@ import heroimage from "../../assets/img/heroimage.jpg";
 import FilterSidebar from "../../components/FilterSidebar";
 import SortingBar from "../../components/SortingBar";
 import Card from "../../components/CardShoes";
+import Pagination from "../../components/Pagination";
+import { useAuth } from "../../context/AuthContext";
 import DynamicBreadcrumb from "../../components/DynamicBreadcrumb";
 import { Link, useSearchParams } from "react-router-dom";
 import api from "../../api/axios";
@@ -11,7 +13,7 @@ export default function Kategori() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
+  const { isAuthenticated } = useAuth();
   // State untuk metadata pagination
   const [pagination, setPagination] = useState({
     currentPage: 1,
@@ -32,10 +34,12 @@ export default function Kategori() {
   const [searchParams] = useSearchParams();
   const searchTermFromURL = searchParams.get("search");
 
+  const [currentPage, setCurrentPage] = useState(1);
+
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await api.get("/products/types");
+        const response = await api.get("/types");
 
         setAvailableCategories(response.data);
       } catch (err) {
@@ -59,7 +63,7 @@ export default function Kategori() {
       }
 
       if (filters.categories.length > 0) {
-        filters.categories.forEach((cat) => params.append("tipe", cat));
+        filters.categories.forEach((cat) => params.append("typeName", cat));
       }
       if (filters.rating) {
         params.append("rating", filters.rating);
@@ -67,6 +71,7 @@ export default function Kategori() {
       params.append("minPrice", filters.price.min);
       params.append("maxPrice", filters.price.max);
 
+      params.append("page", currentPage);
       params.append("sortBy", filters.sortBy);
       params.append("order", filters.order);
 
@@ -88,9 +93,10 @@ export default function Kategori() {
     };
 
     fetchProducts();
-  }, [filters, searchTermFromURL]);
+  }, [filters, searchTermFromURL, currentPage]);
 
   const handleFilterChange = (newFilters) => {
+    setCurrentPage(1);
     setFilters(newFilters);
   };
 
@@ -100,6 +106,11 @@ export default function Kategori() {
       sortBy: sortBy,
       order: order,
     }));
+  };
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+    window.scrollTo(0, 0); // Scroll ke atas halaman
   };
 
   const renderProductContent = () => {
@@ -122,17 +133,23 @@ export default function Kategori() {
     }
 
     return products.map((product) => {
-      const imageUrl =
-        product.image ||
-        "https://placehold.co/400x300/e2e8f0/333?text=No+Image";
-
+      const imageUrl = product.image
+        ? `${import.meta.env.VITE_API_BASE_URL}/${product.image}`
+        : "https://placehold.co/400x300/e2e8f0/333?text=No+Image";
       return (
-        <Link key={product.id} to={`/kategori/${product.id}`}>
+        <Link
+          key={product.id}
+          to={
+            isAuthenticated
+              ? `/kategori/${product.id}`
+              : `/kategoripublic/${product.id}`
+          }
+        >
           <Card
             imageUrl={imageUrl}
             name={product.name}
             description={product.description}
-            rating={product.rating || "N/A"}
+            rating={`${product.rating}/5`}
             price={`Rp${product.price.toLocaleString("id-ID")}`}
           />
         </Link>
@@ -182,10 +199,12 @@ export default function Kategori() {
           </div>
         </div>
 
-        <div className="flex justify-center items-center py-20">
-          <button className="border-black border-2 font-medium w-3/5 md:w-1/4 text-black px-6 py-2.5 rounded-2xl hover:bg-black hover:text-white transition-colors">
-            Lihat Hasil Lainnya
-          </button>
+        <div className="flex justify-center items-center py-12">
+          <Pagination
+            currentPage={pagination.currentPage}
+            totalPages={pagination.totalPages}
+            onPageChange={handlePageChange}
+          />
         </div>
       </div>
     </>

@@ -1,7 +1,9 @@
 import { useLocation } from "react-router-dom";
 import Breadcrumb from "./BreadCrumb";
+import { useAuth } from "../context/AuthContext";
 
 export default function DynamicBreadcrumb() {
+  const { isAuthenticated } = useAuth();
   const location = useLocation();
 
   if (location.pathname === "/") {
@@ -12,7 +14,7 @@ export default function DynamicBreadcrumb() {
 
   let currentLink = "";
   const crumbs = [
-    { label: "Home", path: "/homepage" },
+    { label: "Home", path: isAuthenticated ? `/homepage` : `/` },
     // Buat crumb untuk setiap segmen path
     ...pathnames.map((name) => {
       currentLink += `/${name}`;

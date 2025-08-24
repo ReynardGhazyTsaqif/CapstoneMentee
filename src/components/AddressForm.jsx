@@ -18,16 +18,8 @@ export default function AddressForm({ onClose, onSave, existingAddress }) {
 
   useEffect(() => {
     if (existingAddress) {
-      setFormData({
-        recipientName: existingAddress.recipientName || "",
-        phoneNumber: existingAddress.phoneNumber || "",
-        province: existingAddress.province || "",
-        city: existingAddress.city || "",
-        district: existingAddress.district || "",
-        village: existingAddress.village || "",
-        streetAddress: existingAddress.streetAddress || "",
-        details: existingAddress.details || "",
-      });
+      // PERBAIKAN 1: Pastikan semua data, termasuk 'id', disalin ke form
+      setFormData(existingAddress);
     }
   }, [existingAddress]);
 
@@ -47,6 +39,8 @@ export default function AddressForm({ onClose, onSave, existingAddress }) {
         await api.post("/addresses", formData);
       }
 
+      // PERBAIKAN 2: Kirim 'formData' kembali ke parent, bukan 'response.data'
+      // 'formData' adalah "sumber kebenaran" yang berisi data lengkap
       onSave(formData);
       onClose();
     } catch (err) {
@@ -58,7 +52,6 @@ export default function AddressForm({ onClose, onSave, existingAddress }) {
       setLoading(false);
     }
   };
-
   return (
     <form onSubmit={handleSubmit}>
       <h2 className="text-2xl font-bold mb-2">Alamat Pengiriman</h2>

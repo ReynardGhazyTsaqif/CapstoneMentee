@@ -3,6 +3,7 @@ import { Routes, Route } from "react-router-dom";
 
 // Import komponen Layout dan Proteksi
 import Layout from "./components/Layout";
+import LayoutPublic from "./components/LayoutPublic";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 // Import semua halaman
@@ -29,8 +30,10 @@ export default function App() {
       <Route path="/confirmcode" element={<ConfirmCode />} />
       <Route path="/resetpassword" element={<ResetPassword />} />
 
-      <Route element={<Layout />}>
+      <Route element={<LayoutPublic />}>
         <Route path="/" element={<Homepage />} />
+        <Route path="/kategoripublic" element={<Kategori />} />
+        <Route path="/kategoripublic/:productId" element={<DetailProduk />} />
       </Route>
 
       <Route element={<ProtectedRoute />}>

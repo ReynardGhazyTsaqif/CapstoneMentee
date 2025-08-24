@@ -67,7 +67,7 @@ export default function Card({
             </h2>
             <div className="text-sm text-yellow-500 flex items-center gap-1 flex-shrink-0">
               <span>⭐</span>
-              <span>{rating || "N/A"}</span>
+              <span>{rating || `${rating}/5`}</span>
             </div>
           </div>
           <p className="text-sm text-gray-600">
