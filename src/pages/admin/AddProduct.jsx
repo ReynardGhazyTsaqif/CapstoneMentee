@@ -11,19 +11,17 @@ function AddProduct() {
   const [types, setTypes] = useState([]);
 
   useEffect(() => {
-  const fetchTypes = async () => {
-    try {
-      const res = await api.get("/types");
-      setTypes(res.data); // asumsi respons array of types
-    } catch (err) {
-      console.error("❌ Gagal fetch types:", err);
-    }
-  };
-  fetchTypes();
-}, []);
+    const fetchTypes = async () => {
+      try {
+        const res = await api.get("/types");
+        setTypes(res.data); // asumsi respons array of types
+      } catch (err) {
+        console.error("❌ Gagal fetch types:", err);
+      }
+    };
+    fetchTypes();
+  }, []);
 
-
-  
   const [sizes, setSizes] = useState([{ variantId: 1, size: "", stock: "" }]);
   const [formData, setFormData] = useState({
     name: "",
@@ -53,7 +51,6 @@ function AddProduct() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
 
   // Specifications
-  
 
   // Sizes
   const handleSizeChange = (index, field, value) => {
@@ -67,41 +64,41 @@ function AddProduct() {
 
   // Submit
   const handleSubmit = async () => {
-  try {
-    const dataToSend = new FormData();
+    try {
+      const dataToSend = new FormData();
 
-    // field utama sesuai BE
-    dataToSend.append("name", formData.name);
-    dataToSend.append("brand", formData.brand);
-    dataToSend.append("description", formData.description);
-    dataToSend.append("price", formData.price);
-    dataToSend.append("typeId", formData.tipe);   // sesuai BE
-    dataToSend.append("color", formData.color);
-    dataToSend.append("Material Atas", formData.materialAtas);
-    dataToSend.append("Material Sol", formData.materialSol);
-    dataToSend.append("Kode SKU", formData.sku);
+      // field utama sesuai BE
+      dataToSend.append("name", formData.name);
+      dataToSend.append("brand", formData.brand);
+      dataToSend.append("description", formData.description);
+      dataToSend.append("price", formData.price);
+      dataToSend.append("typeId", formData.tipe); // sesuai BE
+      dataToSend.append("color", formData.color);
+      dataToSend.append("Material Atas", formData.materialAtas);
+      dataToSend.append("Material Sol", formData.materialSol);
+      dataToSend.append("Kode SKU", formData.sku);
 
-    // variants → kirim JSON
-    dataToSend.append("variants", JSON.stringify(
-      sizes.map(s => ({ size: s.size, stock: s.stock }))
-    ));
+      // variants → kirim JSON
+      dataToSend.append(
+        "variants",
+        JSON.stringify(sizes.map((s) => ({ size: s.size, stock: s.stock })))
+      );
 
-    // images
-    files.forEach((file) => dataToSend.append("images", file));
+      // images
+      files.forEach((file) => dataToSend.append("images", file));
 
-    const res = await api.post("/products", dataToSend, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
+      const res = await api.post("/products", dataToSend, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
 
-    console.log("✅ Produk berhasil ditambahkan:", res.data);
-    alert("Produk berhasil ditambahkan!");
-    navigate("/admin/products");
-  } catch (error) {
-    console.error("❌ Gagal menambahkan produk:", error);
-    alert("Gagal menambahkan produk!");
-  }
-};
-
+      console.log("✅ Produk berhasil ditambahkan:", res.data);
+      alert("Produk berhasil ditambahkan!");
+      navigate("/admin/products");
+    } catch (error) {
+      console.error("❌ Gagal menambahkan produk:", error);
+      alert("Gagal menambahkan produk!");
+    }
+  };
 
   return (
     <AdminLayout>
@@ -109,10 +106,14 @@ function AddProduct() {
         Produk Management
       </h1>
       <div className="my-14 ml-5 mr-28 border rounded-md shadow-md">
-        <p className="text-center pt-4 pb-8 text-2xl font-bold">Tambah Produk</p>
+        <p className="text-center pt-4 pb-8 text-2xl font-bold">
+          Tambah Produk
+        </p>
         <div className="pl-12">
           {/* Nama Produk */}
-          <label className="block text-xl font-semibold mb-3">Nama Produk</label>
+          <label className="block text-xl font-semibold mb-3">
+            Nama Produk
+          </label>
           <input
             type="text"
             name="name"
@@ -156,7 +157,9 @@ function AddProduct() {
           />
 
           {/* Material Atas */}
-          <label className="block text-xl font-semibold mb-3">Material Atas</label>
+          <label className="block text-xl font-semibold mb-3">
+            Material Atas
+          </label>
           <input
             type="text"
             name="materialAtas"
@@ -167,7 +170,9 @@ function AddProduct() {
           />
 
           {/* Material Sol */}
-          <label className="block text-xl font-semibold mb-3">Material Sol</label>
+          <label className="block text-xl font-semibold mb-3">
+            Material Sol
+          </label>
           <input
             type="text"
             name="materialSol"
@@ -200,20 +205,19 @@ function AddProduct() {
 
           {/* Tipe */}
           <label className="block text-xl font-semibold mb-3">Tipe</label>
-<select
-  name="tipe"
-  value={formData.tipe}
-  onChange={handleInputChange}
-  className="w-8/12 text-xl mb-6 pl-6 pr-4 py-4 border rounded-3xl"
->
-  <option value="">-- Pilih tipe --</option>
-  {types.map((t) => (
-    <option key={t.id} value={t.id}>
-      {t.name}
-    </option>
-  ))}
-</select>
-
+          <select
+            name="tipe"
+            value={formData.tipe}
+            onChange={handleInputChange}
+            className="w-8/12 text-xl mb-6 pl-6 pr-4 py-4 border rounded-3xl"
+          >
+            <option value="">-- Pilih tipe --</option>
+            {types.map((t) => (
+              <option key={t.id} value={t.id}>
+                {t.name}
+              </option>
+            ))}
+          </select>
 
           {/* Status */}
           <label className="block text-xl font-semibold mb-3">Status</label>
@@ -228,24 +232,28 @@ function AddProduct() {
             <option value="Inactive">Inactive</option>
           </select>
 
-          
-
           {/* Sizes */}
-          <label className="block text-xl font-semibold mb-3">Size & Stok</label>
+          <label className="block text-xl font-semibold mb-3">
+            Size & Stok
+          </label>
           {sizes.map((s, index) => (
             <div key={index} className="flex gap-3 mb-4 items-center w-8/12">
               <input
                 type="number"
                 placeholder="Ukuran"
                 value={s.size}
-                onChange={(e) => handleSizeChange(index, "size", e.target.value)}
+                onChange={(e) =>
+                  handleSizeChange(index, "size", e.target.value)
+                }
                 className="flex-1 text-xl pl-4 py-3 border rounded-2xl"
               />
               <input
                 type="number"
                 placeholder="Stok"
                 value={s.stock}
-                onChange={(e) => handleSizeChange(index, "stock", e.target.value)}
+                onChange={(e) =>
+                  handleSizeChange(index, "stock", e.target.value)
+                }
                 className="flex-1 text-xl pl-4 py-3 border rounded-2xl"
               />
               <button

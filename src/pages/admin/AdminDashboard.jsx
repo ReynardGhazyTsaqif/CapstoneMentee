@@ -15,9 +15,13 @@ export default function AdminDashboard() {
   const [users, setUsers] = useState([]);
   const [products, setProducts] = useState([]); // hanya 5 produk (untuk ditampilkan di card)
   const [allProducts, setAllProducts] = useState([]); // semua produk (untuk hitung total)
+  const [allProductsCount, setAllProductsCount] = useState(0); // total produk
 
   const [loading, setLoading] = useState(true);
   const [loadingUsers, setLoadingUsers] = useState(true);
+
+  const [orders, setOrders] = useState([]);
+  const [loadingOrders, setLoadingOrders] = useState(true);
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -46,11 +50,11 @@ export default function AdminDashboard() {
       setLoading(true);
       try {
         const res = await api.get("/products");
-        console.log("📦 API Response:", res.data);
+
+        // Simpan jumlah total produk
+        setAllProductsCount(res.data.totalItems || 0);
 
         const productList = res.data.products || res.data;
-        console.log("📦 Product list:", productList);
-
         if (!Array.isArray(productList)) {
           console.error("❌ Product list is not an array:", productList);
           setProducts([]);
@@ -63,22 +67,19 @@ export default function AdminDashboard() {
           productList.map(async (product) => {
             try {
               const detailRes = await api.get(`/products/${product.id}`);
-              console.log(`✅ Product ${product.id} detail:`, detailRes.data);
-
               return {
                 ...product,
                 sizes: Array.isArray(detailRes.data.sizes)
                   ? detailRes.data.sizes
                   : [],
               };
-            } catch (error) {
-              console.error(`❌ Error fetching product ${product.id}:`, error);
+            } catch {
               return { ...product, sizes: [] };
             }
           })
         );
 
-        // Simpan semua produk (untuk total)
+        // Simpan semua produk
         setAllProducts(detailedProducts);
 
         // Hitung stok total per produk
@@ -94,15 +95,13 @@ export default function AdminDashboard() {
           (a, b) => a.totalStock - b.totalStock
         );
 
-        // Ambil 5 teratas
-        const top5Products = sortedProducts.slice(0, 5);
-
-        console.log("🎯 Top 5 products with lowest stock:", top5Products);
-        setProducts(top5Products);
+        // Ambil 5 produk dengan stok paling rendah
+        setProducts(sortedProducts.slice(0, 5));
       } catch (err) {
         console.error("❌ Error fetching products:", err);
         setProducts([]);
         setAllProducts([]);
+        setAllProductsCount(0);
       } finally {
         setLoading(false);
       }
@@ -110,6 +109,28 @@ export default function AdminDashboard() {
 
     fetchProducts();
   }, []);
+
+  useEffect(() => {
+    const fetchOrders = async () => {
+      setLoadingOrders(true);
+      try {
+        const res = await api.get("/orders"); // endpoint getAllOrders
+        const data = Array.isArray(res.data) ? res.data : [];
+        setOrders(data);
+      } catch (err) {
+        console.error("❌ Error fetching orders:", err);
+        setOrders([]);
+      } finally {
+        setLoadingOrders(false);
+      }
+    };
+
+    fetchOrders();
+  }, []);
+
+  const latestOrders = [...orders]
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+    .slice(0, 5);
 
   return (
     <AdminLayout>
@@ -123,7 +144,7 @@ export default function AdminDashboard() {
             </div>
             <div className="ml-5">
               <p className="text-sm text-gray-400">Total Order</p>
-              <p className="text-4xl">120</p>
+              <p className="text-4xl">{orders.length}</p>
             </div>
           </div>
           <div className="flex items-center">
@@ -139,7 +160,7 @@ export default function AdminDashboard() {
             </div>
             <div className="ml-5">
               <p className="text-sm text-gray-500">Total Produk</p>
-              <p className="text-4xl font-bold">{allProducts.length}</p>
+              <p className="text-4xl font-bold">{allProductsCount}</p>
             </div>
           </div>
           <div className="flex items-center">
@@ -338,47 +359,86 @@ export default function AdminDashboard() {
 
       {/* Orders Table */}
       <div className="bg-white shadow-md p-4 ml-5 mr-16 rounded-md mt-10 mb-16">
-        <p className="text-2xl font-medium mb-5">Order</p>
-        <table className="w-full border-collapse border border-gray-200">
-          <thead className="bg-gray-200 uppercase">
-            <tr>
-              <th className="border-b border-gray-200 text-left px-8 py-2">
-                Order ID
-              </th>
-              <th className="border-b border-gray-200 text-left px-8 py-2">
-                Nama
-              </th>
-              <th className="border-b border-gray-200 text-left px-8 py-2">
-                Tanggal
-              </th>
-              <th className="border-b border-gray-200 text-left px-8 py-2">
-                Total
-              </th>
-              <th className="border-b border-gray-200 text-left px-8 py-2">
-                Status
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td className="border-b border-gray-200 px-8 py-5">#308453</td>
-              <td className="border-b border-gray-200 px-8 py-5">Akmal</td>
-              <td className="border-b border-gray-200 px-8 py-5">11/04/2025</td>
-              <td className="border-b border-gray-200 px-8 py-5">
-                Rp4.500.000
-              </td>
-              <td className="border-b border-gray-200 px-8 py-5">
-                <span className="px-3 py-1 rounded-full font-semibold bg-green-100 text-green-500">
-                  Delivered
-                </span>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-        <div className="gap-2 flex justify-end items-center mt-4 cursor-pointer text-[#090C47]">
-          <Link to="/admin/orders">Lihat Semua Order</Link>
-          <MoveRight />
-        </div>
+        <p className="text-2xl font-medium mb-5">Orders</p>
+        {loadingOrders ? (
+          <div className="text-center py-5">Loading orders...</div>
+        ) : (
+          <div className="max-h-96 overflow-y-auto">
+            <table className="w-full border-collapse border border-gray-200">
+              <thead className="bg-gray-200 uppercase">
+                <tr>
+                  <th className="border-b border-gray-200 text-left px-4 py-2">
+                    Order ID
+                  </th>
+                  <th className="border-b border-gray-200 text-left px-4 py-2">
+                    Nama Pemesan
+                  </th>
+                  <th className="border-b border-gray-200 text-left px-4 py-2">
+                    Tanggal
+                  </th>
+                  <th className="border-b border-gray-200 text-left px-4 py-2">
+                    Total Harga
+                  </th>
+                  <th className="border-b border-gray-200 text-left px-4 py-2">
+                    Status
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {latestOrders.length > 0 ? (
+                  latestOrders.map((order) => (
+                    <tr key={order.id}>
+                      <td className="border-b border-gray-200 px-4 py-2">
+                        #{order.id}
+                      </td>
+                      <td className="border-b border-gray-200 px-4 py-2">
+                        {order.User?.fullName || "N/A"}
+                      </td>
+                      <td className="border-b border-gray-200 px-4 py-2">
+                        {new Date(order.createdAt).toLocaleDateString("id-ID")}
+                      </td>
+                      <td className="border-b border-gray-200 px-4 py-2">
+                        Rp{Number(order.total_price).toLocaleString("id-ID")}
+                      </td>
+                      <td className="border-b border-gray-200 px-4 py-2">
+                        <span
+                          className={`px-3 py-1 rounded-full font-semibold ${
+                            order.status === "Delivered"
+                              ? "bg-green-100 text-green-500"
+                              : order.status === "Shipped"
+                              ? "bg-blue-100 text-blue-500"
+                              : order.status === "Paid"
+                              ? "bg-purple-100 text-purple-500"
+                              : order.status === "Packed"
+                              ? "bg-yellow-100 text-yellow-500"
+                              : order.status === "Pending"
+                              ? "bg-gray-100 text-gray-800"
+                              : order.status === "Cancelled"
+                              ? "bg-red-100 text-red-500"
+                              : "bg-gray-100 text-gray-800"
+                          }`}
+                        >
+                          {order.status}
+                        </span>
+                      </td>
+                      
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="5" className="text-center py-5">
+                      Tidak ada data order
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+            <div className="gap-2 flex justify-end items-center mt-4 cursor-pointer text-[#090C47]">
+              <Link to="/admin/orders">Lihat Semua Order</Link>
+              <MoveRight />
+            </div>
+          </div>
+        )}
       </div>
     </AdminLayout>
   );

@@ -1,77 +1,81 @@
 import AdminLayout from "../../Component/admin/AdminLayout";
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import { FileText, Plus, Trash2 } from "lucide-react";
-import axios from "axios";
-import { useParams, useNavigate } from "react-router-dom";
+import api from "../../api/axios";
+import { useParams, useNavigate, Link } from "react-router-dom";
 
 function EditProduct() {
   const { id } = useParams();
   const navigate = useNavigate();
-
   const fileInputRef = useRef(null);
+
+  const [types, setTypes] = useState([]);
   const [files, setFiles] = useState([]);
   const [product, setProduct] = useState({
     name: "",
     brand: "",
     description: "",
     price: "",
-    tipe: "",
+    typeId: "",
     status: "Active",
-    specifications: [],
+    color: "",
+    sku: "",
+    materialAtas: "",
+    materialSol: "",
     sizes: [],
   });
 
-  // Load product data
+  // Fetch all types
   useEffect(() => {
-    axios
-      .get(`http://localhost:3000/api/products/${id}`)
-      .then((res) => {
+    const fetchTypes = async () => {
+      try {
+        const res = await api.get("/types");
+        setTypes(res.data);
+      } catch (err) {
+        console.error("❌ Gagal fetch types:", err);
+      }
+    };
+    fetchTypes();
+  }, []);
+
+  // Fetch product data by ID
+  useEffect(() => {
+    const fetchProduct = async () => {
+      try {
+        const res = await api.get(`/products/${id}`);
+        console.log("Fetched product:", res.data);
         const data = res.data;
+        
+
         setProduct({
           name: data.name || "",
           brand: data.brand || "",
           description: data.description || "",
           price: data.price || "",
-          tipe: data.tipe || "",
+          typeId: data.type?.id || "",
           status: data.status || "Active",
-          specifications: data.specifications
-            ? Object.entries(data.specifications).map(([key, value]) => ({
-                key,
-                value,
-              }))
-            : [],
+          color: data.specifications?.["Warna"] || "",
+          sku: data.specifications?.["Kode SKU"] || "",
+          materialAtas: data.specifications?.["Material Atas"] || "",
+          materialSol: data.specifications?.["Material Sol"] || "",
           sizes: data.sizes || [],
         });
-      })
-      .catch((err) => console.error(err));
+
+        // Jika mau menampilkan gambar awal, bisa masukkan ke files atau state khusus preview
+      } catch (err) {
+        console.error("❌ Gagal fetch product:", err);
+      }
+    };
+    fetchProduct();
   }, [id]);
 
-  // Input handler
+  // Input change
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setProduct({ ...product, [name]: value });
   };
 
-  // Specifications handlers
-  const handleSpecChange = (index, field, value) => {
-    const updated = [...product.specifications];
-    updated[index][field] = value;
-    setProduct({ ...product, specifications: updated });
-  };
-
-  const addSpecification = () => {
-    setProduct({
-      ...product,
-      specifications: [...product.specifications, { key: "", value: "" }],
-    });
-  };
-
-  const removeSpecification = (index) => {
-    const updated = product.specifications.filter((_, i) => i !== index);
-    setProduct({ ...product, specifications: updated });
-  };
-
-  // Sizes handlers
+  // Size handlers
   const handleSizeChange = (index, field, value) => {
     const updated = [...product.sizes];
     updated[index][field] = value;
@@ -81,10 +85,7 @@ function EditProduct() {
   const addSize = () => {
     setProduct({
       ...product,
-      sizes: [
-        ...product.sizes,
-        { variantId: product.sizes.length + 1, size: "", stock: "" },
-      ],
+      sizes: [...product.sizes, { variantId: product.sizes.length + 1, size: "", stock: "" }],
     });
   };
 
@@ -96,16 +97,14 @@ function EditProduct() {
   // File handlers
   const handleClick = () => fileInputRef.current.click();
   const handleFileChange = (e) => {
-    const selectedFiles = Array.from(e.target.files);
+    const selectedFiles = Array.from(e.target.files).slice(0, 3);
     const filteredFiles = selectedFiles.filter(
-      (file) =>
-        (file.type === "image/png" || file.type === "image/jpeg") &&
-        selectedFiles.length <= 3
+      (file) => file.type === "image/png" || file.type === "image/jpeg"
     );
     setFiles(filteredFiles);
   };
 
-  // Submit
+  // Submit update
   const handleSubmit = async () => {
     try {
       const formData = new FormData();
@@ -113,24 +112,26 @@ function EditProduct() {
       formData.append("brand", product.brand);
       formData.append("description", product.description);
       formData.append("price", product.price);
-      formData.append("tipe", product.tipe);
+      
+      formData.append("typeId", product.typeId);
       formData.append("status", product.status);
-      formData.append(
-        "specifications",
-        JSON.stringify(
-          product.specifications.reduce((acc, curr) => {
-            if (curr.key && curr.value) acc[curr.key] = curr.value;
-            return acc;
-          }, {})
-        )
-      );
-      formData.append("sizes", JSON.stringify(product.sizes));
 
-      files.forEach((file) => {
-        formData.append("images", file);
-      });
+      // Masukkan specifications
+      const specificationsObject = {
+        Warna: product.color,
+        "Kode SKU": product.sku,
+        "Material Atas": product.materialAtas,
+        "Material Sol": product.materialSol,
+      };
+      formData.append("specifications", JSON.stringify(specificationsObject));
 
-      await axios.put(`http://localhost:3000/api/products/${id}`, formData, {
+      // Variants
+      formData.append("variants", JSON.stringify(product.sizes));
+
+      // Images
+      files.forEach((file) => formData.append("images", file));
+
+      await api.put(`/products/${id}`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
@@ -142,11 +143,11 @@ function EditProduct() {
     }
   };
 
-  // Delete
+  // Delete product
   const handleDelete = async () => {
     if (window.confirm("Yakin hapus produk ini?")) {
       try {
-        await axios.delete(`http://localhost:3000/api/products/${id}`);
+        await api.delete(`/products/${id}`);
         alert("Produk berhasil dihapus!");
         navigate("/admin/products");
       } catch (error) {
@@ -173,18 +174,17 @@ function EditProduct() {
         </button>
 
         <div className="pl-12">
-          <label className="block text-xl font-semibold mb-3">
-            Nama Produk
-          </label>
+          {/* Nama Produk */}
+          <label className="block text-xl font-semibold mb-3">Nama Produk</label>
           <input
             type="text"
             name="name"
             value={product.name}
             onChange={handleInputChange}
             className="w-8/12 text-xl mb-6 pl-6 pr-4 py-4 border rounded-3xl"
-            placeholder="Masukkan nama produk"
           />
 
+          {/* Brand */}
           <label className="block text-xl font-semibold mb-3">Brand</label>
           <input
             type="text"
@@ -192,18 +192,59 @@ function EditProduct() {
             value={product.brand}
             onChange={handleInputChange}
             className="w-8/12 text-xl mb-6 pl-6 pr-4 py-4 border rounded-3xl"
-            placeholder="Masukkan brand produk"
           />
 
+          {/* Warna */}
+          <label className="block text-xl font-semibold mb-3">Warna</label>
+          <input
+            type="text"
+            name="color"
+            value={product.color}
+            onChange={handleInputChange}
+            className="w-8/12 text-xl mb-6 pl-6 pr-4 py-4 border rounded-3xl"
+            placeholder="Masukkan warna produk"
+          />
+
+          {/* SKU */}
+          <label className="block text-xl font-semibold mb-3">Kode SKU</label>
+          <input
+            type="text"
+            name="sku"
+            value={product.sku}
+            onChange={handleInputChange}
+            className="w-8/12 text-xl mb-6 pl-6 pr-4 py-4 border rounded-3xl"
+          />
+
+          {/* Material Atas */}
+          <label className="block text-xl font-semibold mb-3">Material Atas</label>
+          <input
+            type="text"
+            name="materialAtas"
+            value={product.materialAtas}
+            onChange={handleInputChange}
+            className="w-8/12 text-xl mb-6 pl-6 pr-4 py-4 border rounded-3xl"
+          />
+
+          {/* Material Sol */}
+          <label className="block text-xl font-semibold mb-3">Material Sol</label>
+          <input
+            type="text"
+            name="materialSol"
+            value={product.materialSol}
+            onChange={handleInputChange}
+            className="w-8/12 text-xl mb-6 pl-6 pr-4 py-4 border rounded-3xl"
+          />
+
+          {/* Deskripsi */}
           <label className="block text-xl font-semibold mb-3">Deskripsi</label>
           <textarea
             name="description"
             value={product.description}
             onChange={handleInputChange}
             className="w-8/12 text-xl mb-6 pl-6 pr-4 py-4 border rounded-3xl"
-            placeholder="Masukkan deskripsi produk"
           />
 
+          {/* Harga */}
           <label className="block text-xl font-semibold mb-3">Harga</label>
           <input
             type="number"
@@ -211,34 +252,25 @@ function EditProduct() {
             value={product.price}
             onChange={handleInputChange}
             className="w-8/12 text-xl mb-6 pl-6 pr-4 py-4 border rounded-3xl"
-            placeholder="Masukkan harga produk"
           />
 
-          <label className="block text-xl font-semibold mb-3">Kategori</label>
+          {/* Tipe */}
+          <label className="block text-xl font-semibold mb-3">Tipe</label>
           <select
-            name="tipe"
-            value={product.tipe}
+            name="typeId"
+            value={product.typeId}
             onChange={handleInputChange}
             className="w-8/12 text-xl mb-6 pl-6 pr-4 py-4 border rounded-3xl"
           >
-            <option value="">-- Pilih Kategori --</option>
-            <option value="sneakers">Sneakers</option>
-            <option value="sandals">Sandals</option>
-            <option value="boots">Boots</option>
+            <option value="">-- Pilih tipe --</option>
+            {types.map((t) => (
+              <option key={t.id} value={t.id}>
+                {t.name}
+              </option>
+            ))}
           </select>
 
-          <label className="block text-xl font-semibold mb-3">Stok</label>
-          <input
-            type="text"
-            name="stock"
-            value={product.sizes.reduce(
-              (acc, s) => acc + Number(s.stock || 0),
-              0
-            )}
-            readOnly
-            className="w-8/12 text-xl mb-6 pl-6 pr-4 py-4 border rounded-3xl bg-gray-100"
-          />
-
+          {/* Status */}
           <label className="block text-xl font-semibold mb-3">Status</label>
           <select
             name="status"
@@ -250,68 +282,26 @@ function EditProduct() {
             <option value="Inactive">Inactive</option>
           </select>
 
-          {/* Specifications */}
-          <label className="block text-xl font-semibold mb-3">
-            Spesifikasi
-          </label>
-          {product.specifications.map((spec, index) => (
-            <div key={index} className="flex gap-3 mb-4 items-center w-8/12">
-              <input
-                type="text"
-                placeholder="Nama Spesifikasi"
-                value={spec.key}
-                onChange={(e) => handleSpecChange(index, "key", e.target.value)}
-                className="flex-1 text-xl pl-4 py-3 border rounded-2xl"
-              />
-              <input
-                type="text"
-                placeholder="Isi Spesifikasi"
-                value={spec.value}
-                onChange={(e) =>
-                  handleSpecChange(index, "value", e.target.value)
-                }
-                className="flex-1 text-xl pl-4 py-3 border rounded-2xl"
-              />
-              <button
-                onClick={() => removeSpecification(index)}
-                className="p-2 text-red-500"
-              >
-                <Trash2 />
-              </button>
-            </div>
-          ))}
-          <button
-            onClick={addSpecification}
-            className="mb-6 px-4 py-2 bg-gray-200 rounded-lg flex items-center gap-2"
-          >
-            <Plus className="w-4 h-4" /> Tambah Spesifikasi
-          </button>
-
           {/* Sizes */}
-          <label className="block text-xl font-semibold mb-3">
-            Sizes & Stock
-          </label>
+          <label className="block text-xl font-semibold mb-3">Size & Stok</label>
           {product.sizes.map((s, index) => (
             <div key={index} className="flex gap-3 mb-4 items-center w-8/12">
               <input
                 type="number"
                 placeholder="Ukuran"
                 value={s.size}
-                onChange={(e) =>
-                  handleSizeChange(index, "size", e.target.value)
-                }
+                onChange={(e) => handleSizeChange(index, "size", e.target.value)}
                 className="flex-1 text-xl pl-4 py-3 border rounded-2xl"
               />
               <input
                 type="number"
                 placeholder="Stok"
                 value={s.stock}
-                onChange={(e) =>
-                  handleSizeChange(index, "stock", e.target.value)
-                }
+                onChange={(e) => handleSizeChange(index, "stock", e.target.value)}
                 className="flex-1 text-xl pl-4 py-3 border rounded-2xl"
               />
               <button
+                type="button"
                 onClick={() => removeSize(index)}
                 className="p-2 text-red-500"
               >
@@ -320,6 +310,7 @@ function EditProduct() {
             </div>
           ))}
           <button
+            type="button"
             onClick={addSize}
             className="mb-6 px-4 py-2 bg-gray-200 rounded-lg flex items-center gap-2"
           >
@@ -342,7 +333,7 @@ function EditProduct() {
             className="w-full h-64 border-2 border-dashed border-gray-400 rounded-lg p-6 flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50"
           >
             <div className="bg-gray-200 p-4 rounded-lg flex items-center justify-center">
-              <FileText className="w-8 h-8 " />
+              <FileText className="w-8 h-8" />
             </div>
             <p className="text-gray-800 font-medium text-xl mt-4">
               Klik disini untuk upload foto produk
@@ -368,12 +359,12 @@ function EditProduct() {
 
         {/* Tombol */}
         <div className="my-6 flex justify-between px-32">
-          <button
-            onClick={() => navigate("/admin/products")}
-            className="w-4/12 px-6 py-4 text-xl border rounded-2xl"
+          <Link
+            to="/admin/products"
+            className="w-4/12 py-4 px-6 text-xl border rounded-2xl text-center"
           >
             Batalkan
-          </button>
+          </Link>
           <button
             onClick={handleSubmit}
             className="w-4/12 px-6 py-4 bg-black text-white text-xl rounded-2xl"
@@ -387,5 +378,3 @@ function EditProduct() {
 }
 
 export default EditProduct;
-
-

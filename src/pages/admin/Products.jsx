@@ -8,10 +8,13 @@ function Products() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const [searchTerm, setSearchTerm] = useState("");
 
   const itemsPerPage = 10;
 
-  // Normalizer agar nama field konsisten (brand/name/price/description/color/materialAtas/materialSol/sku/tipe/status/images/sizes)
+  // Normalizer agar nama field konsisten
   const normalizeProduct = (raw) => {
     const imagesArr = Array.isArray(raw?.images)
       ? raw.images
@@ -86,68 +89,95 @@ function Products() {
     };
   };
 
-  useEffect(() => {
-    const fetchProducts = async () => {
-      setLoading(true);
-      try {
-        console.log("🔄 Fetching products...");
-        const res = await api.get("/products");
-        console.log("Raw API Response:", res.data);
-        const list = Array.isArray(res.data?.products)
-          ? res.data.products
-          : Array.isArray(res.data)
-          ? res.data
-          : [];
-        if (!Array.isArray(list)) {
-          setProducts([]);
-          return;
-        }
+  // Fetch products dengan pagination
+  const fetchProducts = async (page = 1, search = "") => {
+    setLoading(true);
+    try {
+      console.log(`🔄 Fetching products - Page: ${page}, Search: ${search}`);
 
-        // Jika /products sudah lengkap, cukup normalize sekali:
-        // const detailedProducts = list.map(normalizeProduct);
+      // Kirim parameter pagination dan search ke backend
+      const params = {
+        page: page,
+        limit: itemsPerPage,
+      };
 
-        // Jika butuh detail per ID (mis. untuk sizes), merge & normalize:
-        const detailedProducts = await Promise.all(
-          list.map(async (p) => {
-            try {
-              const base = normalizeProduct(p);
-              // (opsional) ambil detail
-              const detRes = await api.get(`/products/${base.id}`);
-              const merged = normalizeProduct(detRes.data);
-
-              // Hindari duplikasi image
-              const images = merged.images || [];
-
-              // Merge sizes biar unik
-              const sizesMap = new Map();
-              (merged.sizes || []).forEach((s) => {
-                const key = `${s.size}`;
-                if (!sizesMap.has(key)) sizesMap.set(key, s);
-              });
-
-              return {
-                ...merged,
-                images,
-                sizes: Array.from(sizesMap.values()),
-              };
-            } catch (e) {
-              console.warn(`ℹ️ Detail not available for product ${p.id}`, e);
-              return normalizeProduct(p);
-            }
-          })
-        );
-
-        setProducts(detailedProducts);
-      } catch (err) {
-        console.error("❌ Error fetching products:", err);
-        setProducts([]);
-      } finally {
-        setLoading(false);
+      if (search) {
+        params.search = search;
       }
-    };
 
-    fetchProducts();
-  }, []);
+      const res = await api.get("/products", { params });
+      console.log("Raw API Response:", res.data);
+
+      // Backend sudah mengirim format yang benar
+      const {
+        products: productList = [],
+        totalPages,
+        totalItems,
+        currentPage,
+      } = res.data;
+
+      // Ambil detail untuk setiap product secara parallel (lebih cepat)
+      const detailedProducts = await Promise.all(
+        productList.map(async (p) => {
+          try {
+            const base = normalizeProduct(p);
+            // Ambil detail untuk sizes/variants
+            const detRes = await api.get(`/products/${base.id}`);
+            const detailed = normalizeProduct(detRes.data);
+
+            // Merge sizes biar unik
+            const sizesMap = new Map();
+            (detailed.sizes || []).forEach((s) => {
+              const key = `${s.size}`;
+              if (!sizesMap.has(key)) sizesMap.set(key, s);
+            });
+
+            return {
+              ...base,
+              ...detailed,
+              sizes: Array.from(sizesMap.values()),
+            };
+          } catch (e) {
+            console.warn(`ℹ️ Detail not available for product ${p.id}`, e);
+            return normalizeProduct(p);
+          }
+        })
+      );
+
+      setProducts(detailedProducts);
+      setTotalPages(totalPages || 1);
+      setTotalItems(totalItems || 0);
+      setCurrentPage(currentPage || page);
+    } catch (err) {
+      console.error("❌ Error fetching products:", err);
+      setProducts([]);
+      setTotalPages(1);
+      setTotalItems(0);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Initial fetch
+  useEffect(() => {
+    fetchProducts(currentPage, searchTerm);
+  }, [currentPage]);
+
+  // Handle search
+  const handleSearch = (e) => {
+    const value = e.target.value;
+    setSearchTerm(value);
+
+    // Reset ke halaman 1 saat search
+    setCurrentPage(1);
+
+    // Debounce search
+    const timeoutId = setTimeout(() => {
+      fetchProducts(1, value);
+    }, 300);
+
+    return () => clearTimeout(timeoutId);
+  };
 
   const statusBadge = (status) => {
     const st = (status || "").toString().toLowerCase();
@@ -162,13 +192,30 @@ function Products() {
       ? p.sizes.reduce((a, s) => a + (s.stock || 0), 0)
       : 0;
 
-  // Pagination
-  const totalPages = Math.ceil(products.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const currentData = products.slice(startIndex, startIndex + itemsPerPage);
+  // Pagination handlers
+  const prevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
 
-  const prevPage = () => setCurrentPage((p) => Math.max(p - 1, 1));
-  const nextPage = () => setCurrentPage((p) => Math.min(p + 1, totalPages));
+  const nextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const goToPage = (num) => {
+    setCurrentPage(num);
+  };
+
+  const getPageRange = () => {
+    const maxButtons = 5;
+    let start = Math.max(1, currentPage - Math.floor(maxButtons / 2));
+    let end = Math.min(totalPages, start + maxButtons - 1);
+    start = Math.max(1, end - maxButtons + 1);
+    return Array.from({ length: end - start + 1 }, (_, i) => start + i);
+  };
 
   return (
     <AdminLayout>
@@ -185,7 +232,9 @@ function Products() {
           <input
             type="text"
             placeholder="Cari Produk"
-            className="w-full text-xl  pl-16 pr-4 py-4 border placeholder-gray-400 rounded-3xl focus:outline-none"
+            value={searchTerm}
+            onChange={handleSearch}
+            className="w-full text-xl pl-16 pr-4 py-4 border placeholder-gray-400 rounded-3xl focus:outline-none"
           />
         </div>
 
@@ -198,6 +247,12 @@ function Products() {
         </Link>
       </div>
 
+      {/* Info pagination */}
+      <div className="mx-5 mb-4 text-gray-600">
+        Menampilkan {products.length} dari {totalItems} produk (Halaman{" "}
+        {currentPage} dari {totalPages})
+      </div>
+
       {loading ? (
         <p className="p-8">⏳ Loading products...</p>
       ) : (
@@ -206,25 +261,25 @@ function Products() {
             <thead className="bg-gray-200 uppercase">
               <tr>
                 <th className="border-b px-24 py-3">Foto</th>
-                <th className="border-b px-6 py-3">Brand</th>
-                <th className="border-b px-6 py-3">Nama</th>
-                <th className="border-b px-6 py-3">Harga</th>
-                <th className="border-b px-6 py-3">Warna</th>
-                <th className="border-b px-6 py-3">SKU</th>
-                <th className="border-b px-6 py-3">Tipe</th>
-                <th className="border-b px-6 py-3">Material (Atas/Sol)</th>
-                <th className="border-b px-6 py-3">Deskripsi</th>
-                <th className="border-b px-6 py-3">Stok</th>
-                <th className="border-b px-6 py-3">Status</th>
-                <th className="border-b px-6 py-3"></th>
+                <th className="border-b px-8 py-3">Brand</th>
+                <th className="border-b px-8 py-3">Nama</th>
+                <th className="border-b px-8 py-3">Harga</th>
+                <th className="border-b px-8 py-3">Warna</th>
+                <th className="border-b px-8 py-3">SKU</th>
+                <th className="border-b px-8 py-3">Tipe</th>
+                <th className="border-b px-8 py-3">Material (Atas/Sol)</th>
+                <th className="border-b px-8 py-3">Deskripsi</th>
+                <th className="border-b px-8 py-3">Stok</th>
+                <th className="border-b px-8 py-3">Status</th>
+                <th className="border-b px-8 py-3"></th>
               </tr>
             </thead>
             <tbody>
-              {currentData.length > 0 ? (
-                currentData.map((p) => {
+              {products.length > 0 ? (
+                products.map((p) => {
                   return (
                     <tr key={p.id}>
-                      <td className="border-b px-6 py-4">
+                      <td className="border-b px-8 py-4">
                         {p.images && p.images.length > 0 ? (
                           <div className="flex gap-2">
                             {p.images.map((img, index) => (
@@ -241,17 +296,17 @@ function Products() {
                         )}
                       </td>
 
-                      <td className="border-b px-6 py-4">{p.brand}</td>
-                      <td className="border-b px-6 py-4 font-medium">
+                      <td className="border-b px-8 py-4">{p.brand}</td>
+                      <td className="border-b px-8 py-4 font-medium">
                         {p.name}
                       </td>
-                      <td className="border-b px-6 py-4">
+                      <td className="border-b px-8 py-4">
                         Rp{Number(p.price || 0).toLocaleString("id-ID")}
                       </td>
-                      <td className="border-b px-6 py-4">{p.color}</td>
-                      <td className="border-b px-6 py-4">{p.sku}</td>
-                      <td className="border-b px-6 py-4">{p.tipe}</td>
-                      <td className="border-b px-6 py-4">
+                      <td className="border-b px-8 py-4">{p.color}</td>
+                      <td className="border-b px-8 py-4">{p.sku}</td>
+                      <td className="border-b px-8 py-4">{p.tipe}</td>
+                      <td className="border-b px-8 py-4">
                         <div className="text-sm">
                           <div>
                             <span className="text-gray-500">Atas:</span>{" "}
@@ -264,12 +319,12 @@ function Products() {
                         </div>
                       </td>
                       <td
-                        className="border-b px-6 py-4 max-w-[280px] overflow-hidden text-ellipsis whitespace-nowrap"
+                        className="border-b px-8 py-4 max-w-[280px] overflow-hidden text-ellipsis whitespace-nowrap"
                         title={p.description}
                       >
                         {p.description || "-"}
                       </td>
-                      <td className="border-b px-6 py-4">
+                      <td className="border-b px-8 py-4">
                         {totalStock(p)}
                         {/* Nested sizes table (opsional): */}
                         {Array.isArray(p.sizes) && p.sizes.length > 0 && (
@@ -311,7 +366,7 @@ function Products() {
                           </div>
                         )}
                       </td>
-                      <td className="border-b px-6 py-4">
+                      <td className="border-b px-8 py-4">
                         <span
                           className={`px-3 py-1 rounded-full font-semibold ${statusBadge(
                             p.status
@@ -320,7 +375,7 @@ function Products() {
                           {String(p.status || "active").toUpperCase()}
                         </span>
                       </td>
-                      <td className="border-b px-6 py-4 underline">
+                      <td className="border-b px-8 py-4 underline">
                         <Link to={`/admin/editproduct/${p.id}`}>Edit</Link>
                       </td>
                     </tr>
@@ -329,7 +384,9 @@ function Products() {
               ) : (
                 <tr>
                   <td colSpan="12" className="text-center py-6">
-                    Tidak ada produk
+                    {searchTerm
+                      ? `Tidak ada produk dengan kata kunci "${searchTerm}"`
+                      : "Tidak ada produk"}
                   </td>
                 </tr>
               )}
@@ -339,25 +396,50 @@ function Products() {
       )}
 
       {/* Pagination */}
-      <div className="flex justify-center mt-8 mb-16 space-x-4">
-        <button onClick={prevPage} disabled={currentPage === 1}>
-          <ChevronLeft />
-        </button>
-        {Array.from({ length: totalPages }, (_, i) => i + 1).map((num) => (
+      {totalPages > 1 && (
+        <div className="flex justify-center mt-8 mb-16 space-x-4">
+          {/* Tombol Previous */}
           <button
-            key={num}
-            onClick={() => setCurrentPage(num)}
-            className={`px-4 py-2 border rounded ${
-              num === currentPage ? "bg-black text-white" : ""
+            onClick={prevPage}
+            disabled={currentPage === 1}
+            className={`rounded-md border p-8 text-gray-500 ${
+              currentPage === 1
+                ? "cursor-not-allowed opacity-50"
+                : "cursor-pointer hover:bg-gray-200"
             }`}
           >
-            {num}
+            <ChevronLeft />
           </button>
-        ))}
-        <button onClick={nextPage} disabled={currentPage === totalPages}>
-          <ChevronRight />
-        </button>
-      </div>
+
+          {/* Nomor Halaman */}
+          {getPageRange().map((num) => (
+            <button
+              key={num}
+              onClick={() => goToPage(num)}
+              className={`w-24 h-24 flex items-center justify-center rounded-md border ${
+                num === currentPage
+                  ? "bg-black text-white"
+                  : "text-gray-500 hover:bg-gray-300"
+              }`}
+            >
+              {num}
+            </button>
+          ))}
+
+          {/* Tombol Next */}
+          <button
+            onClick={nextPage}
+            disabled={currentPage === totalPages}
+            className={`rounded-md border p-8 text-gray-500 ${
+              currentPage === totalPages
+                ? "cursor-not-allowed opacity-50"
+                : "cursor-pointer hover:bg-gray-200"
+            }`}
+          >
+            <ChevronRight />
+          </button>
+        </div>
+      )}
     </AdminLayout>
   );
 }

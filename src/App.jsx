@@ -63,7 +63,7 @@ export default function App() {
       <Route path="/admin/addcategory" element={<AddCategory />} />
       <Route path="/admin/editcategory/:id" element={<EditCategory />} />
       <Route path="/admin/addproduct" element={<AddProduct />} />
-      <Route path="/admin/editproduct" element={<EditProduct />} />
+      <Route path="/admin/editproduct/:id" element={<EditProduct />} />
 
       <Route path="*" element={<div>404 Not Found</div>} />
     </Routes>
