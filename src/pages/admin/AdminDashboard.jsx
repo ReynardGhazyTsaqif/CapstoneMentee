@@ -220,9 +220,9 @@ export default function AdminDashboard() {
 
       <p className="ml-5 my-5 font-semibold text-2xl">Aktivitas Terkini</p>
 
-      <div className="flex gap-20 items-start">
+      <div className="flex flex-col lg:flex-row gap-6 px-5">
         {/* User Registration Table */}
-        <div className="bg-white shadow-md p-4 ml-5 rounded-md">
+        <div className="bg-white shadow-md p-4 rounded-md flex-1 overflow-x-auto">
           <p className="text-2xl font-medium mb-5">User Registration</p>
           {loadingUsers ? (
             <div className="text-center py-5">Loading users...</div>
@@ -275,7 +275,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* Products Stock Table - DIPERBAIKI */}
-        <div className="bg-white shadow-md p-4 ml-5 rounded-md">
+        <div className="bg-white shadow-md p-4 rounded-md flex-1 overflow-x-auto">
           <p className="text-2xl font-medium mb-5">Stok Produk Tersisa</p>
 
           {loading ? (
@@ -374,7 +374,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* Orders Table */}
-      <div className="bg-white shadow-md p-4 ml-5 mr-16 rounded-md mt-10 mb-16">
+      <div className="bg-white shadow-md p-4 rounded-md mt-10 mb-16 mx-5 overflow-x-auto">
         <p className="text-2xl font-medium mb-5">Orders</p>
         {loadingOrders ? (
           <div className="text-center py-5">Loading orders...</div>
@@ -383,19 +383,19 @@ export default function AdminDashboard() {
             <table className="w-full border-collapse border border-gray-200">
               <thead className="bg-gray-200 uppercase">
                 <tr>
-                  <th className="border-b border-gray-200 text-left px-4 py-2">
+                  <th className="border-b border-gray-200 text-left p-4">
                     Order ID
                   </th>
-                  <th className="border-b border-gray-200 text-left px-4 py-2">
+                  <th className="border-b border-gray-200 text-left p-4">
                     Nama Pemesan
                   </th>
-                  <th className="border-b border-gray-200 text-left px-4 py-2">
+                  <th className="border-b border-gray-200 text-left p-4">
                     Tanggal
                   </th>
-                  <th className="border-b border-gray-200 text-left px-4 py-2">
+                  <th className="border-b border-gray-200 text-left p-4">
                     Total Harga
                   </th>
-                  <th className="border-b border-gray-200 text-left px-4 py-2">
+                  <th className="border-b border-gray-200 text-left p-4">
                     Status
                   </th>
                 </tr>
@@ -404,19 +404,19 @@ export default function AdminDashboard() {
                 {latestOrders.length > 0 ? (
                   latestOrders.map((order) => (
                     <tr key={order.id}>
-                      <td className="border-b border-gray-200 px-4 py-2">
+                      <td className="border-b border-gray-200 p-4">
                         #{order.id}
                       </td>
-                      <td className="border-b border-gray-200 px-4 py-2">
+                      <td className="border-b border-gray-200 p-4">
                         {order.User?.fullName || "N/A"}
                       </td>
-                      <td className="border-b border-gray-200 px-4 py-2">
+                      <td className="border-b border-gray-200 p-4">
                         {new Date(order.createdAt).toLocaleDateString("id-ID")}
                       </td>
-                      <td className="border-b border-gray-200 px-4 py-2">
+                      <td className="border-b border-gray-200 p-4">
                         Rp{Number(order.total_price).toLocaleString("id-ID")}
                       </td>
-                      <td className="border-b border-gray-200 px-4 py-2">
+                      <td className="border-b border-gray-200 p-4">
                         <span
                           className={`px-3 py-1 rounded-full font-semibold ${
                             order.status === "Delivered"

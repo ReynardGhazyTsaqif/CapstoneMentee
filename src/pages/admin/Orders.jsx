@@ -16,7 +16,9 @@ function Orders() {
       setLoadingOrders(true);
       try {
         const res = await api.get("/orders"); // endpoint getAllOrders
+        console.log("✅ Raw response orders:", res);
         const data = Array.isArray(res.data) ? res.data : [];
+        console.log("✅ Parsed orders:", data);
         setOrders(data);
       } catch (err) {
         console.error("❌ Error fetching orders:", err);
@@ -76,8 +78,8 @@ function Orders() {
       </h1>
 
       {/* Search Bar */}
-      <div className="flex items-center w-9/12 mt-16">
-        <div className="relative flex-grow text-black rounded-xl ml-5">
+      <div className="flex items-center w-full md:w-9/12 mt-6 px-4">
+        <div className="relative flex-grow text-black rounded-xl">
           <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
             <Search className="w-5 h-5" />
           </div>
@@ -89,16 +91,16 @@ function Orders() {
               setSearchQuery(e.target.value);
               setCurrentPage(1); // reset ke page 1 kalau search berubah
             }}
-            className="w-full text-xl pl-16 pr-4 py-4 border placeholder-gray-400 rounded-3xl focus:outline-none"
+            className="w-full text-base md:text-xl pl-12 pr-4 py-3 border placeholder-gray-400 rounded-3xl focus:outline-none"
           />
         </div>
       </div>
 
       {/* Filter Buttons */}
-      <div className="bg-white shadow-lg my-8 ml-5 mr-24 rounded-lg">
-        <div className="flex pl-8 py-4 items-center">
-          <p className="font-semibold text-xl mr-16">Filter</p>
-          <div className="flex gap-6 font-semibold">
+      <div className="bg-white shadow-lg my-6 mx-4 rounded-lg">
+        <div className="flex flex-col md:flex-row md:items-center gap-4 md:gap-8 p-4">
+          <p className="font-semibold text-lg md:text-xl">Filter</p>
+          <div className="flex flex-wrap gap-3 md:gap-6 font-semibold">
             {["All", "Pending", "Paid", "Packed", "Shipped", "Delivered"].map(
               (status) => (
                 <button
@@ -107,7 +109,7 @@ function Orders() {
                     setFilter(status);
                     setCurrentPage(1); // Reset ke halaman 1 kalau filter berubah
                   }}
-                  className={`rounded-3xl py-5 px-8 ${
+                  className={`rounded-3xl py-4 px-8 text-sm md:text-base ${
                     filter === status
                       ? "bg-black text-white"
                       : "border hover:bg-gray-100"
@@ -122,13 +124,13 @@ function Orders() {
       </div>
 
       {/* Table */}
-      <div className="bg-white shadow-md p-4 ml-5 mr-16 rounded-md mt-10 mb-16">
+      <div className="bg-white shadow-md p-4 mx-4 rounded-md mt-6 mb-10">
         <p className="text-2xl font-medium mb-5">Semua Orders</p>
         {loadingOrders ? (
           <div className="text-center py-5">Loading orders...</div>
         ) : (
-          <div className="max-h-[70vh] overflow-y-auto">
-            <table className="w-full border-collapse border border-gray-200">
+          <div className="max-h-[70vh] overflow-y-auto overflow-x-auto">
+            <table className="w-full border-collapse border border-gray-200 text-sm md:text-base">
               <thead className="bg-gray-200 uppercase">
                 <tr>
                   <th className="border-b border-gray-200 text-left px-4 py-2">
@@ -175,7 +177,7 @@ function Orders() {
                         </td>
                         <td className="border-b border-gray-200 px-4 py-2">
                           <span
-                            className={`px-3 py-1 rounded-full font-semibold ${
+                            className={`px-3 py-1 rounded-full font-semibold text-xs md:text-sm ${
                               order.status === "Delivered"
                                 ? "bg-green-100 text-green-500"
                                 : order.status === "Shipped"
@@ -215,12 +217,13 @@ function Orders() {
       </div>
 
       {/* Pagination */}
-      <div className="flex justify-center mt-8 mb-16 space-x-4">
+      <div className="flex flex-wrap justify-center mt-8 mb-16 gap-2 sm:space-x-4">
         {/* Tombol Previous */}
         <button
           onClick={prevPage}
           disabled={currentPage === 1}
-          className={`rounded-md border p-8 text-gray-500 ${
+          className={`rounded-md border text-gray-500 flex items-center justify-center 
+        w-16 h-16 sm:w-12 sm:h-12 ${
             currentPage === 1 ? "cursor-not-allowed" : "cursor-pointer"
           }`}
         >
@@ -232,7 +235,8 @@ function Orders() {
           <button
             key={num}
             onClick={() => setCurrentPage(num)}
-            className={`w-24 h-24 flex items-center justify-center rounded-md border ${
+            className={`flex items-center justify-center rounded-md border
+          w-16 h-16 sm:w-12 sm:h-12 ${
               num === currentPage
                 ? "bg-black text-white"
                 : "text-gray-500 hover:bg-gray-300"
@@ -246,7 +250,8 @@ function Orders() {
         <button
           onClick={nextPage}
           disabled={currentPage === totalPages}
-          className={`rounded-md border p-8 text-gray-500 ${
+          className={`flex items-center justify-center rounded-md border
+          w-16 h-16 sm:w-12 sm:h-12 ${
             currentPage === totalPages ? "cursor-not-allowed" : "cursor-pointer"
           }`}
         >

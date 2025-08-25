@@ -17,7 +17,7 @@ function DetailOrder() {
     const fetchOrderDetail = async () => {
       try {
         setLoading(true);
-        const res = await api.get(`/orders/${id}`);
+        const res = await api.get(`/orders/${id}/detail`);
         setOrderDetail(res.data);
         setStatus(res.data.status);
       } catch (err) {

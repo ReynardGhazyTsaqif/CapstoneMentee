@@ -105,7 +105,7 @@ function Products() {
         params.search = search;
       }
 
-      const res = await api.get("/products", { params });
+      const res = await api.get("/products/all", { params });
       console.log("Raw API Response:", res.data);
 
       // Backend sudah mengirim format yang benar
@@ -223,7 +223,7 @@ function Products() {
         Produk Management
       </h1>
 
-      <div className="flex items-center w-full my-16 ">
+      <div className="flex flex-col sm:flex-row gap-4 w-full my-8 px-5 ">
         {/* Search */}
         <div className="relative flex-grow text-black rounded-xl ml-5 mr-16">
           <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
@@ -397,16 +397,17 @@ function Products() {
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex justify-center mt-8 mb-16 space-x-4">
+        <div className="flex flex-wrap justify-center mt-8 mb-16 gap-2 sm:space-x-4">
           {/* Tombol Previous */}
           <button
             onClick={prevPage}
             disabled={currentPage === 1}
-            className={`rounded-md border p-8 text-gray-500 ${
-              currentPage === 1
-                ? "cursor-not-allowed opacity-50"
-                : "cursor-pointer hover:bg-gray-200"
-            }`}
+            className={`rounded-md border text-gray-500 flex items-center justify-center 
+        w-16 h-16 sm:w-12 sm:h-12 ${
+          currentPage === 1
+            ? "cursor-not-allowed opacity-50"
+            : "cursor-pointer hover:bg-gray-200"
+        }`}
           >
             <ChevronLeft />
           </button>
@@ -416,11 +417,12 @@ function Products() {
             <button
               key={num}
               onClick={() => goToPage(num)}
-              className={`w-24 h-24 flex items-center justify-center rounded-md border ${
-                num === currentPage
-                  ? "bg-black text-white"
-                  : "text-gray-500 hover:bg-gray-300"
-              }`}
+              className={`flex items-center justify-center rounded-md border
+          w-16 h-16 sm:w-12 sm:h-12 ${
+            num === currentPage
+              ? "bg-black text-white"
+              : "text-gray-500 hover:bg-gray-300"
+          }`}
             >
               {num}
             </button>
@@ -430,11 +432,12 @@ function Products() {
           <button
             onClick={nextPage}
             disabled={currentPage === totalPages}
-            className={`rounded-md border p-8 text-gray-500 ${
-              currentPage === totalPages
-                ? "cursor-not-allowed opacity-50"
-                : "cursor-pointer hover:bg-gray-200"
-            }`}
+            className={`flex items-center justify-center rounded-md border
+          w-16 h-16 sm:w-12 sm:h-12 ${
+            currentPage === totalPages
+              ? "cursor-not-allowed opacity-50"
+              : "cursor-pointer hover:bg-gray-200"
+          }`}
           >
             <ChevronRight />
           </button>

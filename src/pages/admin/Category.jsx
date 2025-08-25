@@ -64,45 +64,45 @@ function Category() {
       <h1 className="shadow-md font-semibold py-5 pl-5 text-4xl">
         Category Management
       </h1>
-      <div className="flex items-center w-full my-16 px-5 justify-between">
-        <p className="ml-5 my-5 font-semibold text-2xl">Kategori Produk</p>
+      <div className="flex flex-col md:flex-row items-start md:items-center w-full my-8 px-4 justify-between gap-4">
+        <p className="font-semibold text-xl md:text-2xl">Kategori Produk</p>
         <Link
           to="/admin/addcategory"
-          className="bg-black text-white px-6 py-4 text-xl rounded-3xl mx-5"
+          className="bg-black text-white px-4 py-2 md:px-6 md:py-3 text-sm md:text-lg rounded-2xl"
         >
           Tambah Kategori
         </Link>
       </div>
 
-      <div className="shadow-md mx-8 mb-24">
-        <table className="w-full border-collapse border border-gray-200">
+      <div className="shadow-md mx-4 mb-16 overflow-x-auto">
+        <table className="w-full border-collapse border border-gray-200 text-sm md:text-base">
           <thead className="bg-gray-200 uppercase">
             <tr>
-              <th className="border-b font-semibold border-gray-200 text-left px-16 py-3">
+              <th className="border-b font-semibold border-gray-200 text-left px-4 md:px-8 py-3">
                 Kategori
               </th>
-              <th className="border-b font-semibold border-gray-200 text-left px-16 py-3">
+              <th className="border-b font-semibold border-gray-200 text-left px-4 md:px-8 py-3">
                 Status
               </th>
-              <th className="border-b font-semibold border-gray-200 text-left px-16 py-3"></th>
+              <th className="border-b font-semibold border-gray-200 text-left px-4 md:px-8 py-3"></th>
             </tr>
           </thead>
           <tbody>
             {categories.map((cat) => (
               <tr key={cat.id}>
-                <td className="border-b border-gray-200 px-16 py-6">
+                <td className="border-b border-gray-200 px-4 md:px-8 py-3 md:py-6">
                   {cat.name}
                 </td>
-                <td className="border-b border-gray-200 px-16 py-6">
+                <td className="border-b border-gray-200 px-4 md:px-8 py-3 md:py-6">
                   {cat.status}
                 </td>
-                <td className="border-b border-gray-200 px-16 py-6">
+                <td className="border-b border-gray-200 px-4 md:px-8 py-3 md:py-6">
                   <div className="relative flex justify-end dropdown-menu">
                     <button
                       onClick={() =>
                         setIsOpen(isOpen === cat.id ? null : cat.id)
                       }
-                      className="px-8 py-2 border rounded-3xl focus:outline-none"
+                      className="px-4 py-1 md:px-6 md:py-2 border rounded-2xl text-sm md:text-base focus:outline-none"
                     >
                       Edit
                     </button>
