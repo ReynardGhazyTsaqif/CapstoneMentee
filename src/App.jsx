@@ -55,10 +55,10 @@ export default function App() {
       <Route path="/admin/dashboard" element={<AdminDashboard />} />
       <Route path="/admin/products" element={<Products />} />
       <Route path="/admin/users" element={<Users />} />
-      <Route path="/admin/detailusers" element={<DetailUser />} />
+      <Route path="/admin/detailusers/:id" element={<DetailUser />} />
       <Route path="/admin/analytics" element={<Analytics />} />
       <Route path="/admin/orders" element={<Orders />} />
-      <Route path="/admin/detailorder" element={<DetailOrder />} />
+      <Route path="/admin/detailorder/:id" element={<DetailOrder />} />
       <Route path="/admin/category" element={<Category />} />
       <Route path="/admin/addcategory" element={<AddCategory />} />
       <Route path="/admin/editcategory/:id" element={<EditCategory />} />

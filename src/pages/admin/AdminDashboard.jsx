@@ -10,6 +10,7 @@ import {
 import { Link } from "react-router-dom";
 import api from "../../api/axios";
 import { useEffect, useState } from "react";
+import { Textfit } from "react-textfit";
 
 export default function AdminDashboard() {
   const [users, setUsers] = useState([]);
@@ -132,12 +133,25 @@ export default function AdminDashboard() {
     .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
     .slice(0, 5);
 
+  // hitung total revenue dari semua order
+  const totalRevenue = orders
+    .filter((order) => order.status === "Delivered" || order.status === "Paid") // optional, kalau mau hanya yang selesai
+    .reduce((sum, order) => sum + Number(order.total_price || 0), 0);
+
+  const formatRevenue = (value) => {
+    if (value >= 1_000_000_000)
+      return `Rp ${(value / 1_000_000_000).toFixed(1)} M`;
+    if (value >= 1_000_000) return `Rp ${(value / 1_000_000).toFixed(1)} Jt`;
+    if (value >= 1_000) return `Rp ${(value / 1_000).toFixed(1)} Rb`;
+    return `Rp ${value}`;
+  };
+
   return (
     <AdminLayout>
       <h1 className="shadow-md font-semibold py-5 pl-5 text-4xl">Dashboard</h1>
-      <div className="mt-10 flex flex-row gap-12 ml-5 mr-20">
+      <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 px-5">
         {/* Stats Cards - sama seperti sebelumnya */}
-        <div className="w-3/12 bg-white shadow-md p-5 rounded-md font-semibold">
+        <div className=" bg-white shadow-md p-5 rounded-md font-semibold">
           <div className="flex items-center mb-4">
             <div className="bg-gray-100 rounded-full w-12 h-12 flex items-center justify-center">
               <ClipboardCheck className="w-6 h-6" />
@@ -153,7 +167,7 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        <div className="w-3/12 bg-white shadow-xl p-5 rounded-xl">
+        <div className=" bg-white shadow-xl p-5 rounded-xl">
           <div className="flex items-center mb-4">
             <div className="bg-gray-100 rounded-full w-12 h-12 flex items-center justify-center">
               <Package className="w-6 h-6" />
@@ -169,7 +183,7 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        <div className="w-3/12 bg-white shadow-xl p-5 rounded-xl">
+        <div className=" bg-white shadow-xl p-5 rounded-xl">
           <div className="flex items-center mb-4">
             <div className="bg-gray-100 rounded-full w-12 h-12 flex items-center justify-center">
               <Users className="w-6 h-6" />
@@ -185,14 +199,16 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        <div className="w-3/12 bg-white shadow-xl p-5 rounded-xl">
+        <div className=" bg-white shadow-xl p-5 rounded-xl">
           <div className="flex items-center mb-4">
             <div className="bg-gray-100 rounded-full w-12 h-12 flex items-center justify-center">
               <ChartColumnIncreasing className="w-6 h-6" />
             </div>
             <div className="ml-5">
               <p className="text-sm text-gray-500">Total Revenue</p>
-              <p className="text-4xl font-bold">120</p>
+              <p className="text-3xl font-bold ">
+                {formatRevenue(totalRevenue)}
+              </p>
             </div>
           </div>
           <div className="flex items-center">
@@ -421,7 +437,6 @@ export default function AdminDashboard() {
                           {order.status}
                         </span>
                       </td>
-                      
                     </tr>
                   ))
                 ) : (

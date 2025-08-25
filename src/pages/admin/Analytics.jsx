@@ -1,6 +1,7 @@
 import AdminLayout from "../../Component/admin/AdminLayout";
 import { CircleDollarSign } from "lucide-react";
 import { Bar } from "react-chartjs-2";
+import api from "../../api/axios";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -10,6 +11,7 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
+
 
 function Analytics() {
   ChartJS.register(

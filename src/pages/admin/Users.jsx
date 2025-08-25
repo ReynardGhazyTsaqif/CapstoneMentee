@@ -10,7 +10,7 @@ function Users() {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const res = await api.get("/dashboard/recent-users");
+        const res = await api.get("/users/all");
         setUsers(Array.isArray(res.data) ? res.data : []);
       } catch (err) {
         console.error("❌ Error fetching users:", err);
@@ -20,19 +20,19 @@ function Users() {
     fetchUsers();
   }, []);
 
-  const toggleBlockUser = async (userId, isBlocked) => {
+  const toggleBlockUser = async (userId) => {
     try {
-      const newStatus = isBlocked ? "active" : "blocked";
-      await api.patch(`/users/${userId}/status`, { status: newStatus });
-
-      // Update state agar langsung terlihat
+      await api.put(`/users/${userId}/toggle-block`); // ✅ sesuai BE
       setUsers((prev) =>
         prev.map((u) =>
-          u.id === userId ? { ...u, is_blocked: !isBlocked } : u
+          u.id === userId ? { ...u, is_blocked: !u.is_blocked } : u
         )
       );
     } catch (err) {
-      console.error("❌ Gagal update status user:", err);
+      console.error(
+        "❌ Gagal update status user:",
+        err.response?.data || err.message
+      );
     }
   };
 
@@ -70,7 +70,7 @@ function Users() {
               <th className="border-b font-semibold text-left px-8 py-3">
                 Tanggal Join
               </th>
-              
+
               <th className="border-b font-semibold text-left px-8 py-3">
                 Status
               </th>
@@ -93,18 +93,17 @@ function Users() {
                   <td className="border-b border-gray-200 px-8 py-6">
                     {new Date(user.createdAt).toLocaleDateString("id-ID")}
                   </td>
-                  
+
                   <td className="border-b border-gray-200 px-8 py-6">
                     {/* Toggle Switch */}
                     <label className="inline-flex items-center cursor-pointer">
                       <input
                         type="checkbox"
                         checked={!user.is_blocked}
-                        onChange={() =>
-                          toggleBlockUser(user.id, user.is_blocked)
-                        }
+                        onChange={() => toggleBlockUser(user.id)}
                         className="sr-only peer"
                       />
+
                       <div className="relative w-14 h-7 bg-gray-300 rounded-full peer-checked:bg-green-500 transition">
                         <span className="absolute left-1 top-1 w-5 h-5 bg-white rounded-full transition-all peer-checked:translate-x-7"></span>
                       </div>
