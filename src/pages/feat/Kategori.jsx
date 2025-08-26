@@ -114,62 +114,37 @@ export default function Kategori() {
   };
 
   const renderProductContent = () => {
-    if (loading) {
+    if (loading)
       return <div className="text-center col-span-full py-10">Loading...</div>;
-    }
-    if (error) {
+    if (error)
       return (
         <div className="text-center col-span-full py-10 text-red-500">
           {error}
         </div>
       );
-    }
-    if (products.length === 0) {
+    if (products.length === 0)
       return (
         <div className="text-center col-span-full py-10">
-          Tidak ada produk yang cocok dengan filter Anda.
+          Tidak ada produk yang cocok.
         </div>
       );
-    }
 
-    return products.map((product) => {
-      const imageUrl = product.image
-        ? `${import.meta.env.VITE_API_BASE_URL}/${product.image}`
-        : "https://placehold.co/400x300/e2e8f0/333?text=No+Image";
-      return (
-        <Link
-          key={product.id}
-          to={
-            isAuthenticated
-              ? `/kategori/${product.id}`
-              : `/kategoripublic/${product.id}`
-          }
-        >
-          <Card
-            imageUrl={imageUrl}
-            name={product.name}
-            description={product.description}
-            rating={`${product.rating}/5`}
-            price={`Rp${product.price.toLocaleString("id-ID")}`}
-          />
-        </Link>
-      );
-    });
+    return products.map((product) => (
+      // Panggil Card dengan prop 'product' agar semua data terkirim
+      <Card
+        key={product.id}
+        product={product}
+        isWishlisted={product.isWishlisted}
+        onWishlistToggle={() =>
+          handleWishlistToggle(product.id, product.isWishlisted)
+        }
+      />
+    ));
   };
+
   return (
     <>
       <div className="bg-gray-100 w-full min-h-screen flex flex-col">
-        {/* herosection */}
-        <div
-          className="relative w-full h-[50vh] bg-cover bg-center mx-auto"
-          style={{ backgroundImage: `url(${heroimage})` }}
-        >
-          <div className="absolute inset-0 bg-black opacity-20"></div>
-          <div className="flex items-end justify-start h-full p-10">
-            <h1 className="text-white text-4xl font-bold">Temukan Gaya Anda</h1>
-          </div>
-        </div>
-
         <div className="container mx-auto flex flex-col md:flex-row px-6">
           {/* Kolom Kiri - Wrapper untuk Sidebar */}
           <div className="w-full md:w-1/4 lg:w-1/5 py-6">

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import heroimage from "../../assets/img/heroimage.jpg";
 import bannerimage from "../../assets/img/bannerimage.jpg";
 import api from "../../api/axios";
-
+import { useNavigate } from "react-router-dom";
 import Card from "../../components/CardShoes";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
@@ -32,6 +32,49 @@ export default function Homepage() {
     fetchProducts();
   }, []);
 
+  const handleWishlistToggle = async (productId, currentStatus) => {
+    if (!isAuthenticated) {
+      alert("Anda harus login untuk menggunakan wishlist.");
+      navigate("/login");
+      return;
+    }
+    try {
+      if (currentStatus) {
+        await api.delete(`/wishlist/${productId}`);
+      } else {
+        await api.post("/wishlist", { productId });
+      }
+      setProducts(
+        products.map((p) =>
+          p.id === productId ? { ...p, isWishlisted: !currentStatus } : p
+        )
+      );
+    } catch (err) {
+      console.error("Gagal update wishlist:", err);
+      alert("Gagal memperbarui wishlist.");
+    }
+  };
+
+  const renderProductContent = () => {
+    if (loading) return <p className="text-center py-10">Memuat produk...</p>;
+    if (error) return <p className="text-center py-10 text-red-500">{error}</p>;
+    if (!products || products.length === 0)
+      return (
+        <p className="text-center py-10">Tidak ada produk untuk ditampilkan.</p>
+      );
+
+    return products.map((product) => (
+      <Card
+        key={product.id}
+        product={product} // <-- KIRIM SELURUH OBJEK PRODUK
+        isWishlisted={product.isWishlisted}
+        onWishlistToggle={() =>
+          handleWishlistToggle(product.id, product.isWishlisted)
+        }
+      />
+    ));
+  };
+
   return (
     <>
       <div className="bg-black w-full max-h-full">
@@ -45,8 +88,8 @@ export default function Homepage() {
               <div className="relative z-10 flex flex-col justify-between h-full p-6">
                 <div className="p-8 md:p-12">
                   <h1 className="text-white text-4xl md:text-5xl font-bold">
-                    Lorem Ipsum <br />
-                    Dolor Sit Amet
+                    Every Walk <br />
+                    Have Impact
                   </h1>
                 </div>
               </div>
@@ -81,30 +124,11 @@ export default function Homepage() {
 
             {/* Card Section */}
             <div className="px-4 pb-16">
-              {loading && <p className="text-center">Loading produk...</p>}
-              {error && <p className="text-center text-red-500">{error}</p>}
-              {!loading && !error && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 px-4 gap-6">
-                  {products.map((product) => {
-                    const imageUrl = product.image
-                      ? `${import.meta.env.VITE_API_BASE_URL}/${product.image}`
-                      : "https://placehold.co/400x300/e2e8f0/333?text=No+Image";
-
-                    return (
-                      <Link key={product.id} to={`/kategori/${product.id}`}>
-                        <Card
-                          imageUrl={imageUrl}
-                          name={product.name}
-                          description={product.description}
-                          rating={`${product.rating}/5`}
-                          price={`Rp${product.price.toLocaleString("id-ID")}`}
-                        />
-                      </Link>
-                    );
-                  })}
-                </div>
-              )}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {renderProductContent()}
+              </div>
             </div>
+
             {/* End of Card Section */}
 
             <Link to={isAuthenticated ? `/kategori` : `/kategoripublic`}>
@@ -128,9 +152,11 @@ export default function Homepage() {
                     do eiusmod tempor incididunt ut labore et dolore magna
                     aliqua. Ut enim ad minim veniam.
                   </p>
-                  <button className="border-black border-2 text-black px-8 py-2 rounded-full hover:bg-black hover:text-white transition-colors duration-300 font-semibold">
-                    Check it Out
-                  </button>
+                  <Link to={isAuthenticated ? `/kategori` : `/kategoripublic`}>
+                    <button className="border-black border-2 text-black px-8 py-2 rounded-full hover:bg-black hover:text-white transition-colors duration-300 font-semibold">
+                      Check it Out
+                    </button>
+                  </Link>
                 </div>
                 <div className="w-full lg:w-1/3 flex justify-center lg:justify-end">
                   <img

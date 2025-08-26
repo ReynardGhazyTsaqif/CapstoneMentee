@@ -36,7 +36,7 @@ export default function AddressForm({ onClose, onSave, existingAddress }) {
       if (existingAddress) {
         await api.put("/addresses", formData);
       } else {
-        await api.post("/addresses", formData);
+        await api.put("/addresses", formData);
       }
 
       // PERBAIKAN 2: Kirim 'formData' kembali ke parent, bukan 'response.data'

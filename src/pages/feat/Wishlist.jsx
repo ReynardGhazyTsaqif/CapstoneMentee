@@ -30,14 +30,11 @@ export default function Wishlist() {
     fetchWishlist();
   }, []);
 
-  // --- FUNGSI UNTUK MENGHAPUS ITEM DARI WISHLIST ---
   const handleRemoveFromWishlist = async (productId) => {
     const originalItems = [...wishlistItems];
-
     setWishlistItems(
       originalItems.filter((item) => item.Product.id !== productId)
     );
-
     try {
       await api.delete(`/wishlist/${productId}`);
     } catch (err) {
@@ -69,9 +66,11 @@ export default function Wishlist() {
       );
     }
     return wishlistItems.map((item) => {
+      // PERBAIKAN 1: Ambil data produk dari objek 'item.Product'
       const productData = item.Product;
       if (!productData) return null;
 
+      // PERBAIKAN 2: Proses URL gambar dari data yang benar
       const imageUrl =
         productData.images && productData.images.length > 0
           ? productData.images[0].image_url
@@ -80,14 +79,9 @@ export default function Wishlist() {
       return (
         <Card
           key={item.id}
-          imageUrl={imageUrl}
-          name={productData.name}
-          description={productData.description || ""}
-          rating={productData.rating || "N/A"}
-          price={`Rp${productData.price.toLocaleString("id-ID")}`}
+          product={productData} // Kirim seluruh objek produk ke Card
           isWishlisted={true}
           onWishlistToggle={() => handleRemoveFromWishlist(productData.id)}
-          linkTo={`/kategori/${productData.id}`}
         />
       );
     });

@@ -60,7 +60,11 @@ export default function DetailProduk() {
           fetchedProduct.imageGallery &&
           fetchedProduct.imageGallery.length > 0
         ) {
-          setActiveImage(fetchedProduct.imageGallery[0]);
+          // Rakit URL lengkap untuk gambar
+          const fullImageUrl = `${
+            import.meta.env.VITE_API_BASE_URL
+          }/${fetchedProduct.imageGallery[0].replace(/\\/g, "/")}`;
+          setActiveImage(fullImageUrl);
         }
       } catch (err) {
         console.error("Gagal mengambil data produk:", err);
@@ -104,13 +108,12 @@ export default function DetailProduk() {
     }
 
     try {
-      const selectedVariant = product.sizes.find(
-        (s) => s.size === selectedSize
+      const selectedVariant = product.variants.find(
+        (v) => v.size === selectedSize
       );
       if (!selectedVariant) {
         throw new Error("Varian produk tidak ditemukan.");
       }
-
       const cartItem = {
         productVariantId: selectedVariant.variantId,
         quantity: quantity,
@@ -255,26 +258,26 @@ export default function DetailProduk() {
               Rp {product.price}
             </p>
 
-            {product.sizes && product.sizes.length > 0 && (
+            {product.variants && product.variants.length > 0 && (
               <div className="mb-6">
                 <h3 className="text-sm font-semibold mb-3">Pilih Ukuran</h3>
                 <div className="flex flex-wrap gap-2">
-                  {product.sizes.map((s) => (
+                  {product.variants.map((variant) => (
                     <button
-                      key={s.size}
-                      onClick={() => setSelectedSize(s.size)}
-                      disabled={s.stock === 0}
+                      key={variant.variantId}
+                      onClick={() => setSelectedSize(variant.size)}
+                      disabled={variant.stock === 0}
                       className={`px-4 py-2 border rounded-md text-sm transition-colors ${
-                        selectedSize === s.size
+                        selectedSize === variant.size
                           ? "bg-black text-white border-black"
                           : "bg-white text-black border-gray-300"
                       } ${
-                        s.stock === 0
+                        variant.stock === 0
                           ? "bg-gray-200 text-gray-400 cursor-not-allowed line-through"
                           : "hover:bg-gray-200"
                       }`}
                     >
-                      {s.size}
+                      {variant.size}
                     </button>
                   ))}
                 </div>
@@ -334,8 +337,7 @@ export default function DetailProduk() {
             </div>
 
             <div className="mt-6 border-t pt-4 text-sm text-gray-600 space-y-2">
-              <p>Garansi Jam Tangan: 1 Bulan</p>
-              <p>Akan dikirim: 20 Agustus 2025</p>
+              <p>Garansi: 1 Bulan</p>
             </div>
           </div>
         </div>
