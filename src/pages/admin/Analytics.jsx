@@ -14,7 +14,14 @@ import {
 } from "chart.js";
 
 function Analytics() {
-  ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
+  ChartJS.register(
+    CategoryScale,
+    LinearScale,
+    BarElement,
+    Title,
+    Tooltip,
+    Legend
+  );
 
   const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -26,7 +33,10 @@ function Analytics() {
     if (img.startsWith("http")) {
       try {
         const url = new URL(img);
-        return `${import.meta.env.VITE_API_BASE_URL}${url.pathname.replace(/\\/g, "/")}`;
+        return `${import.meta.env.VITE_API_BASE_URL}${url.pathname.replace(
+          /\\/g,
+          "/"
+        )}`;
       } catch {
         return img;
       }
@@ -41,7 +51,7 @@ function Analytics() {
   useEffect(() => {
     const fetchAnalytics = async () => {
       try {
-        const res = await api.get("/analytics"); 
+        const res = await api.get("/analytics");
         console.log("📊 Data Analytics dari BE:", res.data);
         setAnalytics(res.data);
       } catch (error) {
@@ -157,8 +167,10 @@ function Analytics() {
       </div>
 
       {/* --- Chart --- */}
-      <div className="w-full  mt-10 mx-5 h-96 bg-white shadow-xl rounded-xl p-6">
-        <Bar data={data} options={options} />
+      <div className="mx-5">
+        <div className="w-full  mt-10  h-96 bg-white shadow-xl rounded-xl p-6">
+          <Bar data={data} options={options} />
+        </div>
       </div>
 
       {/* --- Top Products --- */}
@@ -167,10 +179,18 @@ function Analytics() {
         <table className="w-full min-w-[600px] border-collapse border border-gray-200 text-sm md:text-base">
           <thead className="bg-gray-200 uppercase">
             <tr>
-              <th className="border-b border-gray-200 text-left px-8 py-2">Foto</th>
-              <th className="border-b border-gray-200 text-left px-8 py-2">Nama Produk</th>
-              <th className="border-b border-gray-200 text-left px-8 py-2">Kategori</th>
-              <th className="border-b border-gray-200 text-left px-8 py-2">Total Terjual</th>
+              <th className="border-b border-gray-200 text-left px-8 py-2">
+                Foto
+              </th>
+              <th className="border-b border-gray-200 text-left px-8 py-2">
+                Nama Produk
+              </th>
+              <th className="border-b border-gray-200 text-left px-8 py-2">
+                Kategori
+              </th>
+              <th className="border-b border-gray-200 text-left px-8 py-2">
+                Total Terjual
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -183,8 +203,12 @@ function Analytics() {
                     className="w-12 h-12 object-cover rounded"
                   />
                 </td>
-                <td className="border-b border-gray-200 px-8 py-5">{prod.name}</td>
-                <td className="border-b border-gray-200 px-8 py-5">{prod.type}</td>
+                <td className="border-b border-gray-200 px-8 py-5">
+                  {prod.name}
+                </td>
+                <td className="border-b border-gray-200 px-8 py-5">
+                  {prod.type}
+                </td>
                 <td className="border-b border-gray-200 px-8 py-5">
                   {prod.sold}x Terjual
                 </td>

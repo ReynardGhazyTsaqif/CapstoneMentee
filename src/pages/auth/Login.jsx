@@ -28,28 +28,31 @@ export default function Login() {
     setError(null);
 
     try {
-  const response = await api.post("/auth/login", formData);
-  console.log("Login response:", response.data);
+      const response = await api.post("/auth/login", formData);
+      console.log("Login response:", response.data);
 
-  
+      if (response.data.accessToken && response.data.user) {
+        login(response.data.accessToken, response.data.user);
 
-  if (response.data.accessToken && response.data.user) {
-    login(response.data.accessToken, response.data.user);
-
-    if (response.data.user.role === "admin") {
-      navigate("/admin/dashboard");
-    } else {
-      navigate("/");
-    }
-  } else {
-    setError("Respons dari server tidak valid.");
-  }
-} catch (err) {
-  const errorMessage =
-    err.response?.data?.message ||
-    "Email atau password salah. Silakan coba lagi.";
-  setError(errorMessage);
-} finally {
+        // Navigasi berdasarkan role
+        const role = response.data.user.role;
+        if (role === "admin") {
+          navigate("/admin/dashboard");
+        } else if (role === "user") {
+          navigate("/homepage");
+        } else {
+          // fallback, jika role tidak dikenali
+          navigate("/login");
+        }
+      } else {
+        setError("Respons dari server tidak valid.");
+      }
+    } catch (err) {
+      const errorMessage =
+        err.response?.data?.message ||
+        "Email atau password salah. Silakan coba lagi.";
+      setError(errorMessage);
+    } finally {
       setLoading(false);
     }
   };

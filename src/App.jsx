@@ -18,18 +18,19 @@ import ForgotPassword from "./pages/auth/ForgotPassword";
 import ConfirmCode from "./pages/auth/ConfirmCode";
 import ResetPassword from "./pages/auth/ResetPassword";
 
-import AdminDashboard from './pages/admin/AdminDashboard';
-import Products from './pages/admin/Products';
-import Users from './pages/admin/Users';
-import Analytics from './pages/admin/Analytics';
-import Orders from './pages/admin/Orders';
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import Products from "./pages/admin/Products";
+import Users from "./pages/admin/Users";
+import Analytics from "./pages/admin/Analytics";
+import Orders from "./pages/admin/Orders";
 import DetailOrder from "./pages/admin/DetailOrder";
 import DetailUser from "./pages/admin/DetailUser";
 import Category from "./pages/admin/Category";
 import AddCategory from "./pages/admin/AddCategory";
 import EditCategory from "./pages/admin/EditCategory";
-import AddProduct from './pages/admin/AddProduct';
-import EditProduct from './pages/admin/EditProduct';
+import AddProduct from "./pages/admin/AddProduct";
+import EditProduct from "./pages/admin/EditProduct";
+import AdminRoute from "./pages/admin/AdminRoute";
 
 export default function App() {
   return (
@@ -40,7 +41,6 @@ export default function App() {
       <Route path="/forgotpassword" element={<ForgotPassword />} />
       <Route path="/confirmcode" element={<ConfirmCode />} />
       <Route path="/resetpassword" element={<ResetPassword />} />
-      
 
       <Route element={<ProtectedRoute />}>
         <Route path="/homepage" element={<Homepage />} />
@@ -52,18 +52,20 @@ export default function App() {
         </Route>
       </Route>
 
-      <Route path="/admin/dashboard" element={<AdminDashboard />} />
-      <Route path="/admin/products" element={<Products />} />
-      <Route path="/admin/users" element={<Users />} />
-      <Route path="/admin/detailusers/:id" element={<DetailUser />} />
-      <Route path="/admin/analytics" element={<Analytics />} />
-      <Route path="/admin/orders" element={<Orders />} />
-      <Route path="/admin/detailorder/:id" element={<DetailOrder />} />
-      <Route path="/admin/category" element={<Category />} />
-      <Route path="/admin/addcategory" element={<AddCategory />} />
-      <Route path="/admin/editcategory/:id" element={<EditCategory />} />
-      <Route path="/admin/addproduct" element={<AddProduct />} />
-      <Route path="/admin/editproduct/:id" element={<EditProduct />} />
+      <Route element={<AdminRoute />}>
+        <Route path="/admin/dashboard" element={<AdminDashboard />} />
+        <Route path="/admin/products" element={<Products />} />
+        <Route path="/admin/users" element={<Users />} />
+        <Route path="/admin/detailusers/:id" element={<DetailUser />} />
+        <Route path="/admin/analytics" element={<Analytics />} />
+        <Route path="/admin/orders" element={<Orders />} />
+        <Route path="/admin/detailorder/:id" element={<DetailOrder />} />
+        <Route path="/admin/category" element={<Category />} />
+        <Route path="/admin/addcategory" element={<AddCategory />} />
+        <Route path="/admin/editcategory/:id" element={<EditCategory />} />
+        <Route path="/admin/addproduct" element={<AddProduct />} />
+        <Route path="/admin/editproduct/:id" element={<EditProduct />} />
+      </Route>
 
       <Route path="*" element={<div>404 Not Found</div>} />
     </Routes>

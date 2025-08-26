@@ -4,17 +4,26 @@ import { useState, useEffect } from "react";
 import api from "../../api/axios";
 
 function Category() {
-  const [isOpen, setIsOpen] = useState(null); // bedakan dropdown tiap row
-
-  const [categories, setCategories] = useState([]); // ✅ state kategori
+  const [isOpen, setIsOpen] = useState(null);
+  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Ambil data kategori dari BE
+  // ✅ state untuk modal konfirmasi hapus
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [selectedId, setSelectedId] = useState(null);
+
+  const statusBadge = (status) => {
+    const st = (status || "").toString().toLowerCase();
+    if (st === "inactive" || st === "draft") return "bg-red-300 text-red-600";
+    if (st === "archived") return "bg-zinc-100 text-zinc-700";
+
+    return "bg-green-100 text-green-600";
+  };
+
   const fetchCategories = async () => {
     try {
-      const res = await api.get("/types/all"); // ✅ GET /api/types
-      console.log("📌 Data kategori:", res.data);
-      setCategories(res.data); // sesuaikan dengan format BE kamu
+      const res = await api.get("/types/all");
+      setCategories(res.data);
     } catch (err) {
       console.error("❌ Gagal fetch kategori:", err);
     } finally {
@@ -26,7 +35,7 @@ function Category() {
     fetchCategories();
   }, []);
 
-  // Tutup dropdown kalau klik di luar
+  
   useEffect(() => {
     function handleClickOutside(event) {
       if (!event.target.closest(".dropdown-menu")) {
@@ -45,14 +54,12 @@ function Category() {
     );
   }
 
-  const handleDelete = async (id) => {
-    if (!window.confirm("Yakin ingin menghapus kategori ini?")) return;
-
+  const handleDelete = async () => {
     try {
-      await api.delete(`/types/${id}`); // ✅ DELETE /api/types/:id
-      alert("Kategori berhasil dihapus");
-      // Refresh data
-      setCategories((prev) => prev.filter((cat) => cat.id !== id));
+      await api.delete(`/types/${selectedId}`);
+      setCategories((prev) => prev.filter((cat) => cat.id !== selectedId));
+      setShowConfirm(false);
+      setSelectedId(null);
     } catch (err) {
       console.error("❌ Gagal hapus kategori:", err);
       alert("Terjadi kesalahan saat menghapus kategori");
@@ -94,8 +101,14 @@ function Category() {
                   {cat.name}
                 </td>
                 <td className="border-b border-gray-200 px-4 md:px-8 py-3 md:py-6">
-                  {cat.status}
-                </td>
+                        <span
+                          className={`px-3 py-1 rounded-full font-semibold ${statusBadge(
+                            cat.status
+                          )}`}
+                        >
+                          {String(cat.status || "active").toUpperCase()}
+                        </span>
+                      </td>
                 <td className="border-b border-gray-200 px-4 md:px-8 py-3 md:py-6">
                   <div className="relative flex justify-end dropdown-menu">
                     <button
@@ -119,7 +132,11 @@ function Category() {
                         </li>
                         <li>
                           <button
-                            onClick={() => handleDelete(cat.id)}
+                            onClick={() => {
+                              setSelectedId(cat.id);
+                              setShowConfirm(true);
+                              setIsOpen(null);
+                            }}
                             className="block w-full text-left px-4 py-2 hover:bg-gray-100 text-red-600 rounded-b-lg"
                           >
                             Hapus
@@ -134,6 +151,40 @@ function Category() {
           </tbody>
         </table>
       </div>
+
+      {/* Modal Konfirmasi */}
+      {showConfirm && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white rounded-2xl shadow-lg p-6 w-96 relative">
+            <button
+              className="absolute top-3 right-3 text-gray-600 hover:text-black"
+              onClick={() => setShowConfirm(false)}
+            >
+              ✕
+            </button>
+            <h2 className="text-lg font-semibold mb-2">
+              Apa kamu yakin ingin menghapus kategori ini?
+            </h2>
+            <p className="text-sm text-gray-500 mb-6">
+              Aksi ini tidak bisa dibatalkan kembali.
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setShowConfirm(false)}
+                className="px-4 py-2 border rounded-xl"
+              >
+                Batalkan
+              </button>
+              <button
+                onClick={handleDelete}
+                className="px-4 py-2 bg-black text-white rounded-xl"
+              >
+                Ya, Hapus
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </AdminLayout>
   );
 }

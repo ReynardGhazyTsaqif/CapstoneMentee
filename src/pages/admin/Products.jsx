@@ -12,6 +12,9 @@ function Products() {
   const [totalItems, setTotalItems] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
 
+  const [showConfirm, setShowConfirm] = useState(false); // modal hapus
+  const [selectedId, setSelectedId] = useState(null); //
+
   const itemsPerPage = 10;
 
   // Normalizer agar nama field konsisten
@@ -181,9 +184,9 @@ function Products() {
 
   const statusBadge = (status) => {
     const st = (status || "").toString().toLowerCase();
-    if (st === "inactive" || st === "draft") return "bg-gray-100 text-gray-600";
+    if (st === "inactive" || st === "draft") return "bg-red-300 text-red-600";
     if (st === "archived") return "bg-zinc-100 text-zinc-700";
-    // default active
+
     return "bg-green-100 text-green-600";
   };
 
@@ -216,6 +219,29 @@ function Products() {
     start = Math.max(1, end - maxButtons + 1);
     return Array.from({ length: end - start + 1 }, (_, i) => start + i);
   };
+
+  const handleDelete = async () => {
+    try {
+      await api.delete(`/products/${selectedId}`);
+      setProducts((prev) => prev.filter((p) => p.id !== selectedId));
+      setShowConfirm(false);
+      setSelectedId(null);
+    } catch (err) {
+      console.error("❌ Gagal hapus produk:", err);
+      alert("Terjadi kesalahan saat menghapus produk");
+    }
+  };
+
+  const [isOpen, setIsOpen] = useState(null);
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (!event.target.closest(".dropdown-menu")) {
+        setIsOpen(null);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   return (
     <AdminLayout>
@@ -375,8 +401,42 @@ function Products() {
                           {String(p.status || "active").toUpperCase()}
                         </span>
                       </td>
-                      <td className="border-b px-8 py-4 underline">
-                        <Link to={`/admin/editproduct/${p.id}`}>Edit</Link>
+                      <td className="border-b border-gray-200 px-4 md:px-8 py-3 md:py-6">
+                        <div className="relative flex justify-end dropdown-menu">
+                          <button
+                            onClick={() =>
+                              setIsOpen(isOpen === p.id ? null : p.id)
+                            }
+                            className="px-4 py-1 md:px-6 md:py-2 border rounded-2xl text-sm md:text-base focus:outline-none"
+                          >
+                            Edit
+                          </button>
+
+                          {isOpen === p.id && (
+                            <ul className="absolute right-0 top-full mt-2 w-40 bg-white rounded-lg shadow-lg border border-gray-200 z-20">
+                              <li>
+                                <Link
+                                  to={`/admin/editproduct/${p.id}`}
+                                  className="block px-4 py-2 hover:bg-gray-100 text-gray-700 rounded-t-lg"
+                                >
+                                  Edit
+                                </Link>
+                              </li>
+                              <li>
+                                <button
+                                  onClick={() => {
+                                    setSelectedId(p.id);
+                                    setShowConfirm(true);
+                                    setIsOpen(null);
+                                  }}
+                                  className="block w-full text-left px-4 py-2 hover:bg-gray-100 text-red-600 rounded-b-lg"
+                                >
+                                  Hapus
+                                </button>
+                              </li>
+                            </ul>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   );
@@ -441,6 +501,40 @@ function Products() {
           >
             <ChevronRight />
           </button>
+        </div>
+      )}
+
+      {/* ✅ Modal Konfirmasi */}
+      {showConfirm && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white rounded-2xl shadow-lg p-6 w-96 relative">
+            <button
+              className="absolute top-3 right-3 text-gray-600 hover:text-black"
+              onClick={() => setShowConfirm(false)}
+            >
+              ✕
+            </button>
+            <h2 className="text-lg font-semibold mb-2">
+              Apa kamu yakin ingin menghapus produk ini?
+            </h2>
+            <p className="text-sm text-gray-500 mb-6">
+              Aksi ini tidak bisa dibatalkan kembali.
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setShowConfirm(false)}
+                className="px-4 py-2 border rounded-xl"
+              >
+                Batalkan
+              </button>
+              <button
+                onClick={handleDelete}
+                className="px-4 py-2 bg-black text-white rounded-xl"
+              >
+                Ya, Hapus
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </AdminLayout>
