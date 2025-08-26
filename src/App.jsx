@@ -14,7 +14,7 @@ import ShopCart from "./pages/feat/ShopCart";
 
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
-import ForgotPassword from "./pages/auth/ForgotPassword";
+import ForgotPassword from "./Pages/auth/forgotpassword";
 import ConfirmCode from "./pages/auth/ConfirmCode";
 import ResetPassword from "./pages/auth/ResetPassword";
 
