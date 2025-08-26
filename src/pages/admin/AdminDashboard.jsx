@@ -146,6 +146,91 @@ export default function AdminDashboard() {
     return `Rp ${value}`;
   };
 
+  const getMonthStats = (data, field = "createdAt") => {
+    const now = new Date();
+    const thisMonth = now.getMonth(); // 0=Jan
+    const lastMonth = (thisMonth - 1 + 12) % 12;
+    const year = now.getFullYear();
+
+    const thisMonthData = data.filter((item) => {
+      const d = new Date(item[field]);
+      return d.getMonth() === thisMonth && d.getFullYear() === year;
+    });
+
+    const lastMonthData = data.filter((item) => {
+      const d = new Date(item[field]);
+      return (
+        d.getMonth() === lastMonth &&
+        d.getFullYear() === (lastMonth === 11 ? year - 1 : year)
+      );
+    });
+
+    return {
+      thisMonth: thisMonthData,
+      lastMonth: lastMonthData,
+    };
+  };
+
+  const renderTrend = (thisMonthValue, lastMonthValue) => {
+    if (lastMonthValue === 0 && thisMonthValue === 0) {
+      return (
+        <div className="flex items-center text-gray-500">
+          <span>-</span>
+        </div>
+      );
+    }
+
+    if (thisMonthValue > lastMonthValue) {
+      return (
+        <div className="flex items-center text-green-500">
+          <ChevronUp className="w-5 h-5 mt-1" />
+          <p className="text-sm ml-1">
+            {(
+              ((thisMonthValue - lastMonthValue) / (lastMonthValue || 1)) *
+              100
+            ).toFixed(2)}
+            %
+          </p>
+        </div>
+      );
+    } else if (thisMonthValue < lastMonthValue) {
+      return (
+        <div className="flex items-center text-red-500">
+          <ChevronDown className="w-5 h-5 mt-1" />
+          <p className="text-sm ml-1">
+            {(
+              ((lastMonthValue - thisMonthValue) / (lastMonthValue || 1)) *
+              100
+            ).toFixed(2)}
+            %
+          </p>
+        </div>
+      );
+    } else {
+      return (
+        <div className="flex items-center text-gray-500">
+          <span>0%</span>
+        </div>
+      );
+    }
+  };
+
+  // === Perhitungan Trend Dinamis ===
+  const { thisMonth: thisMonthOrders, lastMonth: lastMonthOrders } =
+    getMonthStats(orders);
+  const { thisMonth: thisMonthUsers, lastMonth: lastMonthUsers } =
+    getMonthStats(users);
+  const { thisMonth: thisMonthProducts, lastMonth: lastMonthProducts } =
+    getMonthStats(allProducts);
+
+  const revenueThisMonth = thisMonthOrders
+    .filter((o) => o.status === "Delivered" || o.status === "Paid")
+    .reduce((sum, o) => sum + Number(o.total_price || 0), 0);
+
+  const revenueLastMonth = lastMonthOrders
+    .filter((o) => o.status === "Delivered" || o.status === "Paid")
+    .reduce((sum, o) => sum + Number(o.total_price || 0), 0);
+
   return (
     <AdminLayout>
       <h1 className="shadow-md font-semibold py-5 pl-5 text-4xl">Dashboard</h1>
@@ -161,10 +246,7 @@ export default function AdminDashboard() {
               <p className="text-4xl">{orders.length}</p>
             </div>
           </div>
-          <div className="flex items-center">
-            <ChevronUp className="text-green-500 w-5 h-5 mt-1" />
-            <p className="text-sm text-gray-400 ml-1">2,45%</p>
-          </div>
+          {renderTrend(thisMonthOrders.length, lastMonthOrders.length)}
         </div>
 
         <div className=" bg-white shadow-xl p-5 rounded-xl">
@@ -177,10 +259,7 @@ export default function AdminDashboard() {
               <p className="text-4xl font-bold">{allProductsCount}</p>
             </div>
           </div>
-          <div className="flex items-center">
-            <ChevronUp className="text-green-600 w-5 h-5 mt-1" />
-            <p className="text-sm text-gray-500 ml-1">2,45%</p>
-          </div>
+          {renderTrend(thisMonthProducts.length, lastMonthProducts.length)}
         </div>
 
         <div className=" bg-white shadow-xl p-5 rounded-xl">
@@ -193,10 +272,7 @@ export default function AdminDashboard() {
               <p className="text-4xl font-bold">{users.length}</p>
             </div>
           </div>
-          <div className="flex items-center">
-            <ChevronUp className="text-green-600 w-5 h-5 mt-1" />
-            <p className="text-sm text-gray-500 ml-1">2,45%</p>
-          </div>
+          {renderTrend(thisMonthUsers.length, lastMonthUsers.length)}
         </div>
 
         <div className=" bg-white shadow-xl p-5 rounded-xl">
@@ -211,10 +287,7 @@ export default function AdminDashboard() {
               </p>
             </div>
           </div>
-          <div className="flex items-center">
-            <ChevronUp className="text-green-600 w-5 h-5 mt-1" />
-            <p className="text-sm text-gray-500 ml-1">2,45%</p>
-          </div>
+          {renderTrend(revenueThisMonth, revenueLastMonth)}
         </div>
       </div>
 

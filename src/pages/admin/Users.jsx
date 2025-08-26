@@ -102,7 +102,7 @@ function Users() {
           <tbody>
             {currentData.length > 0 ? (
               currentData.map((user) => (
-                <tr key={user.id} className="hover:bg-gray-50">
+                <tr key={user.id} className="hover:bg-gray-50 ">
                   <td className="border-b border-gray-200 px-4 py-3 md:px-8 md:py-6">
                     {user.fullName}
                   </td>
