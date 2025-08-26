@@ -75,8 +75,8 @@ function DetailUser() {
                   onChange={(e) => setRole(e.target.value)}
                   className="border border-gray-300 rounded-md px-3 py-1 focus:outline-none"
                 >
-                  <option value="Admin">Admin</option>
-                  <option value="User">User</option>
+                  <option value="admin">Admin</option>
+                  <option value="user">User</option>
                 </select>
               </div>
             </div>

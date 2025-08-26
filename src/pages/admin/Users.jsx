@@ -36,14 +36,32 @@ function Users() {
     }
   };
 
-  
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
+  const totalPages = Math.ceil(users.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const currentData = users.slice(startIndex, startIndex + itemsPerPage);
+
+  const prevPage = () => setCurrentPage((prev) => Math.max(prev - 1, 1));
+  const nextPage = () =>
+    setCurrentPage((prev) => Math.min(prev + 1, totalPages));
+
+  // hitung halaman yang terlihat (maks 5 tombol)
+  const maxVisible = 5;
+  const startPage = Math.floor((currentPage - 1) / maxVisible) * maxVisible + 1;
+  const endPage = Math.min(startPage + maxVisible - 1, totalPages);
+
+  const visiblePages = [];
+  for (let i = startPage; i <= endPage; i++) {
+    visiblePages.push(i);
+  }
 
   return (
     <AdminLayout>
       <h1 className="shadow-md font-semibold py-5 pl-5 text-4xl">
         User Management
       </h1>
-
       {/* Search */}
       <div className="flex items-center w-full my-8 px-4">
         <div className="relative flex-grow text-black rounded-xl">
@@ -57,7 +75,6 @@ function Users() {
           />
         </div>
       </div>
-
       {/* Table */}
       <div className="mx-4 shadow-md overflow-x-auto rounded-xl">
         <table className="w-full border-collapse border border-gray-200 text-sm md:text-base">
@@ -83,8 +100,8 @@ function Users() {
           </thead>
 
           <tbody>
-            {users.length > 0 ? (
-              users.map((user) => (
+            {currentData.length > 0 ? (
+              currentData.map((user) => (
                 <tr key={user.id} className="hover:bg-gray-50">
                   <td className="border-b border-gray-200 px-4 py-3 md:px-8 md:py-6">
                     {user.fullName}
@@ -129,16 +146,45 @@ function Users() {
           </tbody>
         </table>
       </div>
-
-      {/* Pagination (sementara statis) */}
-      <div className="flex justify-center mt-8 mb-16 space-x-4">
-        <button className="rounded-md border p-4 text-gray-500">
+      + {/* Pagination */}
+      <div className="flex flex-wrap justify-center mt-8 mb-16 gap-2 sm:space-x-4">
+        {/* Tombol Previous */}
+        <button
+          onClick={prevPage}
+          disabled={currentPage === 1}
+          className={`rounded-md border text-gray-500 flex items-center justify-center 
+       w-16 h-16 sm:w-12 sm:h-12 ${
+         currentPage === 1 ? "cursor-not-allowed" : "cursor-pointer"
+       }`}
+        >
           <ChevronLeft />
         </button>
-        <button className="w-12 h-12 flex items-center justify-center rounded-md border bg-black text-white">
-          1
-        </button>
-        <button className="rounded-md border p-4 text-gray-500">
+
+        {/* Nomor Halaman */}
+        {visiblePages.map((num) => (
+          <button
+            key={num}
+            onClick={() => setCurrentPage(num)}
+            className={`flex items-center justify-center rounded-md border
+         w-16 h-16 sm:w-12 sm:h-12 ${
+           num === currentPage
+             ? "bg-black text-white"
+             : "text-gray-500 hover:bg-gray-300"
+         }`}
+          >
+            {num}
+          </button>
+        ))}
+
+        {/* Tombol Next */}
+        <button
+          onClick={nextPage}
+          disabled={currentPage === totalPages}
+          className={`flex items-center justify-center rounded-md border
+       w-16 h-16 sm:w-12 sm:h-12 ${
+         currentPage === totalPages ? "cursor-not-allowed" : "cursor-pointer"
+       }`}
+        >
           <ChevronRight />
         </button>
       </div>

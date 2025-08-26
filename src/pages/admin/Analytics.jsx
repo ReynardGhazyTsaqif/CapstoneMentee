@@ -117,8 +117,8 @@ function Analytics() {
       <h1 className="shadow-md font-semibold py-5 pl-5 text-4xl">Analytics</h1>
 
       {/* --- Cards --- */}
-      <div className="mt-10 flex flex-row gap-12 ml-5 mr-20">
-        <div className="w-4/12 bg-white shadow-xl p-5 rounded-xl">
+      <div className="mt-10 flex flex-col md:flex-row gap-6 px-5">
+        <div className="w-full md:w-4/12 bg-white shadow-xl p-5 rounded-xl">
           <div className="flex items-center mb-4">
             <div className="bg-gray-100 rounded-full w-12 h-12 flex items-center justify-center">
               <CircleDollarSign className="w-6 h-6" />
@@ -132,7 +132,7 @@ function Analytics() {
           </div>
         </div>
 
-        <div className="w-4/12 bg-white shadow-xl p-5 rounded-xl">
+        <div className="w-full md:w-4/12 bg-white shadow-xl p-5 rounded-xl">
           <div className="flex items-center mb-4">
             <div className="bg-gray-100 rounded-full w-12 h-12 flex items-center justify-center">
               <CircleDollarSign className="w-6 h-6" />
@@ -146,7 +146,7 @@ function Analytics() {
           </div>
         </div>
 
-        <div className="w-2/12 bg-white shadow-xl space-y-4 rounded-xl flex items-center justify-center text-center text-orange-400">
+        <div className="w-full md:w-2/12 bg-white shadow-xl space-y-4 rounded-xl flex items-center justify-center text-center text-orange-400">
           <div>
             <p className="text-sm leading-relaxed">Order Pending</p>
             <p className="text-4xl font-bold leading-relaxed">
@@ -157,14 +157,14 @@ function Analytics() {
       </div>
 
       {/* --- Chart --- */}
-      <div className="w-8/12 ml-5 mt-10 h-96 bg-white shadow-xl rounded-xl p-6">
+      <div className="w-full  mt-10 mx-5 h-96 bg-white shadow-xl rounded-xl p-6">
         <Bar data={data} options={options} />
       </div>
 
       {/* --- Top Products --- */}
       <p className="ml-5 my-10 font-semibold text-2xl">Top Selling Produk</p>
-      <div className="w-full px-5 rounded-md mb-16">
-        <table className="w-full border-collapse border border-gray-200">
+      <div className="w-full px-5 rounded-md mb-16 overflow-x-auto">
+        <table className="w-full min-w-[600px] border-collapse border border-gray-200 text-sm md:text-base">
           <thead className="bg-gray-200 uppercase">
             <tr>
               <th className="border-b border-gray-200 text-left px-8 py-2">Foto</th>
