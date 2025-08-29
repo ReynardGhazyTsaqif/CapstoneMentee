@@ -32,9 +32,7 @@ export default function SizeSelectionModal({
         </p>
 
         <div className="flex flex-wrap gap-3 mb-8">
-          {/* ====================================================== */}
-          {/* PERBAIKAN DI SINI: Gunakan 'product.variants' */}
-          {/* ====================================================== */}
+         
           {(product.variants || []).map((variant) => (
             <button
               key={variant.variantId}
