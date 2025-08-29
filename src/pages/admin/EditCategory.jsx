@@ -76,7 +76,7 @@ function EditCategory() {
       <h1 className="shadow-md font-semibold py-5 pl-5 text-4xl">
         Category Management
       </h1>
-      <div className="my-14 ml-5 mr-28 border rounded-md shadow-md">
+      <div className="my-8 mx-4 md:mx-16 border rounded-md shadow-md p-6 md:p-10">
         <p className="text-center pt-4 pb-8 text-2xl font-bold">
           Edit Kategori Produk
         </p>
@@ -90,7 +90,7 @@ function EditCategory() {
             name="name"
             value={formData.name}
             onChange={handleInputChange}
-            className="w-8/12 text-xl mb-6 pl-6 pr-4 py-4 border rounded-3xl focus:outline-none"
+            className="w-full md:w-8/12 text-base md:text-xl mb-6 pl-4 md:pl-6 pr-4 py-3 md:py-4 border rounded-3xl focus:outline-none"
             placeholder="Masukkan nama kategori"
           />
 
@@ -100,7 +100,7 @@ function EditCategory() {
             name="status"
             value={formData.status}
             onChange={handleInputChange}
-            className="w-8/12 text-xl mb-6 pl-6 pr-4 py-4 border rounded-3xl focus:outline-none"
+            className="w-full md:w-8/12 text-base md:text-xl mb-6 pl-4 md:pl-6 pr-4 py-3 md:py-4 border rounded-3xl focus:outline-none"
           >
             <option value="">-- Pilih Status --</option>
             <option value="Active">Active</option>
@@ -109,17 +109,17 @@ function EditCategory() {
         </div>
 
         {/* Tombol */}
-        <div className="my-6 flex justify-between px-32">
+        <div className="my-6 flex flex-col md:flex-row gap-4 md:justify-between md:px-16">
           <Link
             to="/admin/category"
-            className="w-4/12 py-4 px-6 text-xl border rounded-2xl"
+            className="w-full md:w-4/12 py-3 md:py-4 px-6 text-base md:text-xl border rounded-2xl text-center"
           >
             Batalkan
           </Link>
           <button
             onClick={handleSubmit}
             disabled={loading}
-            className="w-4/12 px-6 py-4 bg-black text-white text-xl rounded-2xl disabled:opacity-50"
+            className="w-full md:w-4/12 px-6 py-3 md:py-4 bg-black text-white text-base md:text-xl rounded-2xl disabled:opacity-50"
           >
             {loading ? "Menyimpan..." : "Simpan"}
           </button>

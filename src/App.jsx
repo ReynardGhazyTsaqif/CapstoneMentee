@@ -31,6 +31,9 @@ import EditCategory from "./pages/admin/EditCategory";
 import AddProduct from "./pages/admin/AddProduct";
 import EditProduct from "./pages/admin/EditProduct";
 import AdminRoute from "./pages/admin/AdminRoute";
+import DetailProducts from "./pages/admin/DetailProduct";
+
+import NotFound from "./pages/NotFound";
 
 export default function App() {
   return (
@@ -52,7 +55,7 @@ export default function App() {
         </Route>
       </Route>
 
-      <Route element={<AdminRoute />}>
+      {/* <Route element={<AdminRoute />}> */}
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
         <Route path="/admin/products" element={<Products />} />
         <Route path="/admin/users" element={<Users />} />
@@ -65,9 +68,10 @@ export default function App() {
         <Route path="/admin/editcategory/:id" element={<EditCategory />} />
         <Route path="/admin/addproduct" element={<AddProduct />} />
         <Route path="/admin/editproduct/:id" element={<EditProduct />} />
-      </Route>
+        <Route path="/admin/detailproduct/:id" element={<DetailProducts />} />
+      {/* </Route> */}
 
-      <Route path="*" element={<div>404 Not Found</div>} />
+      <Route path="*" element={<NotFound />} />
     </Routes>
   );
 }

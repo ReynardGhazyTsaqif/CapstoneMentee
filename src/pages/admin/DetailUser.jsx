@@ -53,10 +53,18 @@ function DetailUser() {
   return (
     <AdminLayout>
       <div className="min-h-screen bg-gray-100 p-6">
-        <div className="max-w-5xl mx-auto space-y-6">
+        <div className=" mx-auto space-y-6">
           {/* Detail User */}
-          <div className="bg-white p-6 rounded-xl shadow-md relative">
-            <h2 className="text-lg font-semibold mb-4">Detail User</h2>
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-semibold">Detail User</h2>
+            <button
+              onClick={handleSave}
+              className="bg-black text-white px-4 md:px-6 py-2 rounded-full hover:bg-gray-800 transition"
+            >
+              Simpan
+            </button>
+          </div>
+          <div className="bg-white p-4 md:p-6 rounded-xl shadow-md relative">
             <div className="space-y-3 text-sm">
               <p>
                 <span className="font-medium">Nama:</span> {user.fullName}
@@ -80,13 +88,6 @@ function DetailUser() {
                 </select>
               </div>
             </div>
-
-            <button
-              onClick={handleSave}
-              className="absolute top-6 right-6 bg-black text-white px-6 py-2 rounded-full hover:bg-gray-800 transition"
-            >
-              Simpan
-            </button>
           </div>
 
           {/* Riwayat Order */}

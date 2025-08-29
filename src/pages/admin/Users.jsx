@@ -63,7 +63,7 @@ function Users() {
         User Management
       </h1>
       {/* Search */}
-      <div className="flex items-center w-full my-8 px-4">
+      <div className="flex flex-col sm:flex-row items-center w-full my-8 px-4 gap-3">
         <div className="relative flex-grow text-black rounded-xl">
           <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
             <Search className="w-5 h-5" />
@@ -77,7 +77,7 @@ function Users() {
       </div>
       {/* Table */}
       <div className="mx-4 shadow-md overflow-x-auto rounded-xl">
-        <table className="w-full border-collapse border border-gray-200 text-sm md:text-base">
+        <table className="w-full min-w-[700px] border-collapse border border-gray-200 text-xs sm:text-sm md:text-base">
           <thead className="bg-gray-200 uppercase">
             <tr>
               <th className="border-b border-gray-200 px-4 py-3 md:px-8 md:py-6">

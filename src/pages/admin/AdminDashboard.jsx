@@ -12,6 +12,44 @@ import api from "../../api/axios";
 import { useEffect, useState } from "react";
 import { Textfit } from "react-textfit";
 
+
+const normalizeProduct = (product) => {
+  return {
+    ...product,
+    images: Array.isArray(product.images)
+      ? product.images
+      : product.imageGallery
+      ? product.imageGallery
+      : product.image
+      ? [product.image]
+      : [],
+
+    sizes: Array.isArray(product.sizes)
+      ? product.sizes
+      : Array.isArray(product.variants)
+      ? product.variants.map((v) => ({
+          size: v.size,
+          stock: v.stock,
+          variantId: v.id,
+        }))
+      : [],
+
+    specifications: product.specifications
+      ? typeof product.specifications === "string"
+        ? (() => {
+            try {
+              return JSON.parse(product.specifications);
+            } catch {
+              return {};
+            }
+          })()
+        : product.specifications
+      : {},
+  };
+};
+
+
+
 export default function AdminDashboard() {
   const [users, setUsers] = useState([]);
   const [products, setProducts] = useState([]); // hanya 5 produk (untuk ditampilkan di card)
@@ -50,10 +88,10 @@ export default function AdminDashboard() {
     const fetchProducts = async () => {
       setLoading(true);
       try {
-        const res = await api.get("/products");
+        const res = await api.get("/products/all");
 
         // Simpan jumlah total produk
-        setAllProductsCount(res.data.totalItems || 0);
+        
 
         const productList = res.data.products || res.data;
         if (!Array.isArray(productList)) {
@@ -65,23 +103,21 @@ export default function AdminDashboard() {
 
         // Ambil detail tiap produk
         const detailedProducts = await Promise.all(
-          productList.map(async (product) => {
-            try {
-              const detailRes = await api.get(`/products/${product.id}`);
-              return {
-                ...product,
-                sizes: Array.isArray(detailRes.data.sizes)
-                  ? detailRes.data.sizes
-                  : [],
-              };
-            } catch {
-              return { ...product, sizes: [] };
-            }
-          })
-        );
+  productList.map(async (product) => {
+    try {
+      const detailRes = await api.get(`/products/${product.id}`);
+      return normalizeProduct({ ...product, ...detailRes.data });
+    } catch {
+      return normalizeProduct(product);
+    }
+  })
+);
+
 
         // Simpan semua produk
         setAllProducts(detailedProducts);
+        setAllProductsCount(detailedProducts.length);
+
 
         // Hitung stok total per produk
         const productsWithStock = detailedProducts.map((p) => {
@@ -109,6 +145,7 @@ export default function AdminDashboard() {
     };
 
     fetchProducts();
+    
   }, []);
 
   useEffect(() => {

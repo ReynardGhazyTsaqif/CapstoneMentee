@@ -10,8 +10,8 @@ function DetailOrder() {
   const [status, setStatus] = useState("");
   const [loading, setLoading] = useState(true);
 
-  const shippingRef = useRef();
-  const invoiceRef = useRef();
+  const shippingRef = useRef(null);
+  const invoiceRef = useRef(null);
 
   useEffect(() => {
     const fetchOrderDetail = async () => {
@@ -40,13 +40,193 @@ function DetailOrder() {
     }
   };
 
+  // SOLUSI 1: Menggunakan useReactToPrint dengan reactToPrintContent
   const handlePrintShipping = useReactToPrint({
-    content: () => shippingRef.current,
+    contentRef: shippingRef, // Gunakan contentRef untuk versi terbaru
+    documentTitle: `ShippingLabel-${id}`,
+    onAfterPrint: () => console.log("Shipping label printed successfully"),
+    onPrintError: (error) => console.error("Print shipping error:", error),
   });
 
   const handlePrintInvoice = useReactToPrint({
-    content: () => invoiceRef.current,
+    contentRef: invoiceRef, // Gunakan contentRef untuk versi terbaru
+    documentTitle: `Invoice-${id}`,
+    onAfterPrint: () => console.log("Invoice printed successfully"),
+    onPrintError: (error) => console.error("Print invoice error:", error),
   });
+
+  // SOLUSI 2: Manual print function sebagai backup
+  const printShippingManual = () => {
+    if (!shippingRef.current) {
+      alert("Shipping content not found!");
+      return;
+    }
+
+    const printWindow = window.open('', '', 'width=800,height=600');
+    const content = shippingRef.current.innerHTML;
+    
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>Shipping Label - ${id}</title>
+          <style>
+            body { 
+              font-family: monospace; 
+              margin: 0; 
+              padding: 20px;
+            }
+            * {
+              -webkit-print-color-adjust: exact !important;
+              color-adjust: exact !important;
+            }
+          </style>
+        </head>
+        <body>
+          ${content}
+          <script>
+            window.onload = function() {
+              window.print();
+              setTimeout(() => window.close(), 100);
+            }
+          </script>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+  };
+
+  const printInvoiceManual = () => {
+    if (!invoiceRef.current) {
+      alert("Invoice content not found!");
+      return;
+    }
+
+    const printWindow = window.open('', '', 'width=800,height=600');
+    const content = invoiceRef.current.innerHTML;
+    
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>Invoice - ${id}</title>
+          <style>
+            body { 
+              font-family: sans-serif; 
+              margin: 0; 
+              padding: 20px;
+            }
+            table {
+              width: 100%;
+              border-collapse: collapse;
+            }
+            th, td {
+              border: 1px solid black;
+              padding: 8px;
+              text-align: left;
+            }
+            * {
+              -webkit-print-color-adjust: exact !important;
+              color-adjust: exact !important;
+            }
+          </style>
+        </head>
+        <body>
+          ${content}
+          <script>
+            window.onload = function() {
+              window.print();
+              setTimeout(() => window.close(), 100);
+            }
+          </script>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+  };
+
+  const ShippingLabel = ({ order }) => (
+    <div className="w-[400px] border border-black p-4 font-mono text-xs bg-white">
+      {/* Header */}
+      <div className="text-center font-bold text-lg mb-2">
+        USPS PRIORITY MAIL
+      </div>
+      <div className="flex justify-between text-sm border-b border-black pb-2 mb-2">
+        <span>From: {order.User?.fullName}</span>
+        <span>Order #{order.id}</span>
+      </div>
+
+      {/* Address */}
+      <div className="mb-4">
+        <p className="font-bold">To:</p>
+        <p>{order.User?.fullName}</p>
+        <p>{order.shipping_address}</p>
+      </div>
+
+      {/* Barcode */}
+      <div className="mt-6 text-center">
+        <img
+          src={`https://api.qrserver.com/v1/create-qr-code/?size=150x50&data=Order${order.id}`}
+          alt="barcode"
+          className="mx-auto"
+        />
+      </div>
+
+      {/* Footer */}
+      <div className="text-center text-xs mt-2">
+        Shipping: {order.shipping_method || "Standard"}
+      </div>
+    </div>
+  );
+
+  const Invoice = ({ order, status }) => (
+    <div className="w-[600px] border border-black p-6 font-sans text-sm bg-white">
+      {/* Header */}
+      <h2 className="text-2xl font-bold text-center mb-4">INVOICE</h2>
+      <div className="mb-4">
+        <p>
+          <strong>Order ID:</strong> #{order.id}
+        </p>
+        <p>
+          <strong>Nama:</strong> {order.User?.fullName}
+        </p>
+        <p>
+          <strong>Email:</strong> {order.User?.email}
+        </p>
+        <p>
+          <strong>Alamat:</strong> {order.shipping_address}
+        </p>
+      </div>
+
+      {/* Items Table */}
+      <table className="w-full border-collapse border border-black text-sm mb-4">
+        <thead>
+          <tr className="bg-gray-200 border-b border-black">
+            <th className="text-left p-2 border border-black">Produk</th>
+            <th className="text-right p-2 border border-black">Harga</th>
+          </tr>
+        </thead>
+        <tbody>
+          {order.items.map((item, idx) => (
+            <tr key={idx} className="border-b border-black">
+              <td className="p-2 border border-black">
+                {item.variantDetails.product.name}
+              </td>
+              <td className="p-2 text-right border border-black">
+                Rp{Number(item.price).toLocaleString("id-ID")}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      {/* Total */}
+      <div className="text-right font-bold text-lg mb-2">
+        Total: Rp{Number(order.total_price).toLocaleString("id-ID")}
+      </div>
+      <p>
+        <strong>Status:</strong> {status}
+      </p>
+    </div>
+  );
 
   if (loading) {
     return (
@@ -67,10 +247,10 @@ function DetailOrder() {
   return (
     <AdminLayout>
       <div className="min-h-screen bg-gray-100 p-6">
-        <div className="max-w-4xl mx-auto space-y-6">
+        <div className=" mx-auto space-y-6">
           {/* Detail Order */}
           <div className="bg-white p-6 rounded-xl shadow-md">
-            <h2 className="text-lg font-semibold mb-4">Detail Order</h2>
+            <h2 className="text-xl font-semibold mb-4">Detail Order</h2>
             <div className="space-y-2 text-sm">
               <p>
                 <span className="font-medium">Order ID:</span> #
@@ -135,44 +315,52 @@ function DetailOrder() {
             </div>
           </div>
 
-          {/* Shipping Label (hidden, hanya muncul saat print) */}
-          <div className="hidden">
-            <div ref={shippingRef} className="p-10">
-              <h2 className="text-xl font-bold mb-4">Shipping Label</h2>
-              <p>Order ID: #{orderDetail?.id}</p>
-              <p>Nama: {orderDetail?.User?.fullName}</p>
-              <p>Alamat: {orderDetail?.shipping_address}</p>
+          {/* Print Elements - Hidden but accessible */}
+          <div style={{ position: "absolute", left: "-9999px", top: "-9999px" }}>
+            <div ref={shippingRef}>
+              {orderDetail && <ShippingLabel order={orderDetail} />}
             </div>
           </div>
 
-          {/* Invoice (hidden, hanya muncul saat print) */}
-          <div className="hidden">
-            <div ref={invoiceRef} className="p-10">
-              <h2 className="text-xl font-bold mb-4">Invoice</h2>
-              <p>Order ID: #{orderDetail?.id}</p>
-              <p>
-                Total: Rp
-                {Number(orderDetail?.total_price).toLocaleString("id-ID")}
-              </p>
-              <p>Status: {status}</p>
+          <div style={{ position: "absolute", left: "-9999px", top: "-9999px" }}>
+            <div ref={invoiceRef}>
+              {orderDetail && <Invoice order={orderDetail} status={status} />}
             </div>
           </div>
 
           {/* Tombol Aksi */}
           <div className="flex gap-4 mt-6">
             <button
-              onClick={handlePrintShipping}
+              onClick={() => {
+                console.log("Shipping ref:", shippingRef.current);
+                if (shippingRef.current) {
+                  handlePrintShipping();
+                } else {
+                  printShippingManual();
+                }
+              }}
               className="bg-black text-white px-6 py-2 rounded-full hover:bg-gray-800 transition"
             >
               Print Shipping Label
             </button>
             <button
-              onClick={handlePrintInvoice}
+              onClick={() => {
+                console.log("Invoice ref:", invoiceRef.current);
+                if (invoiceRef.current) {
+                  handlePrintInvoice();
+                } else {
+                  printInvoiceManual();
+                }
+              }}
               className="bg-black text-white px-6 py-2 rounded-full hover:bg-gray-800 transition"
             >
               Print Invoice
             </button>
+
+            
           </div>
+
+          
         </div>
       </div>
     </AdminLayout>

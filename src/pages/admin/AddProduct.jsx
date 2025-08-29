@@ -105,11 +105,11 @@ function AddProduct() {
       <h1 className="shadow-md font-semibold py-5 pl-5 text-4xl">
         Produk Management
       </h1>
-      <div className="my-14 ml-5 mr-28 border rounded-md shadow-md">
+      <div className="my-14 mx-4 md:ml-5 md:mr-28 border rounded-md shadow-md">
         <p className="text-center pt-4 pb-8 text-2xl font-bold">
           Tambah Produk
         </p>
-        <div className="pl-12">
+        <div className="px-4 md:pl-12">
           {/* Nama Produk */}
           <label className="block text-xl font-semibold mb-3">
             Nama Produk
@@ -119,7 +119,7 @@ function AddProduct() {
             name="name"
             value={formData.name}
             onChange={handleInputChange}
-            className="w-8/12 text-xl mb-6 pl-6 pr-4 py-4 border rounded-3xl"
+            className="w-full md:w-8/12 text-base md:text-xl mb-6 pl-4 md:pl-6 pr-4 py-3 md:py-4 border rounded-3xl"
             placeholder="Masukkan nama produk"
           />
 
@@ -130,7 +130,7 @@ function AddProduct() {
             name="brand"
             value={formData.brand}
             onChange={handleInputChange}
-            className="w-8/12 text-xl mb-6 pl-6 pr-4 py-4 border rounded-3xl"
+            className="w-full md:w-8/12 text-base md:text-xl mb-6 pl-4 md:pl-6 pr-4 py-3 md:py-4 border rounded-3xl"
             placeholder="Masukkan brand produk"
           />
 
@@ -141,7 +141,7 @@ function AddProduct() {
             name="sku"
             value={formData.sku}
             onChange={handleInputChange}
-            className="w-8/12 text-xl mb-6 pl-6 pr-4 py-4 border rounded-3xl"
+            className="w-full md:w-8/12 text-base md:text-xl mb-6 pl-4 md:pl-6 pr-4 py-3 md:py-4 border rounded-3xl"
             placeholder="Masukkan kode SKU produk"
           />
 
@@ -152,7 +152,7 @@ function AddProduct() {
             name="color"
             value={formData.color}
             onChange={handleInputChange}
-            className="w-8/12 text-xl mb-6 pl-6 pr-4 py-4 border rounded-3xl"
+            className="w-full md:w-8/12 text-base md:text-xl mb-6 pl-4 md:pl-6 pr-4 py-3 md:py-4 border rounded-3xl"
             placeholder="Masukkan warna produk"
           />
 
@@ -165,7 +165,7 @@ function AddProduct() {
             name="materialAtas"
             value={formData.materialAtas}
             onChange={handleInputChange}
-            className="w-8/12 text-xl mb-6 pl-6 pr-4 py-4 border rounded-3xl"
+            className="w-full md:w-8/12 text-base md:text-xl mb-6 pl-4 md:pl-6 pr-4 py-3 md:py-4 border rounded-3xl"
             placeholder="Masukkan material atas"
           />
 
@@ -178,7 +178,7 @@ function AddProduct() {
             name="materialSol"
             value={formData.materialSol}
             onChange={handleInputChange}
-            className="w-8/12 text-xl mb-6 pl-6 pr-4 py-4 border rounded-3xl"
+            className="w-full md:w-8/12 text-base md:text-xl mb-6 pl-4 md:pl-6 pr-4 py-3 md:py-4 border rounded-3xl"
             placeholder="Masukkan material sol"
           />
 
@@ -188,7 +188,7 @@ function AddProduct() {
             name="description"
             value={formData.description}
             onChange={handleInputChange}
-            className="w-8/12 text-xl mb-6 pl-6 pr-4 py-4 border rounded-3xl"
+            className="w-full md:w-8/12 text-base md:text-xl mb-6 pl-4 md:pl-6 pr-4 py-3 md:py-4 border rounded-3xl"
             placeholder="Masukkan deskripsi produk"
           />
 
@@ -199,7 +199,7 @@ function AddProduct() {
             name="price"
             value={formData.price}
             onChange={handleInputChange}
-            className="w-8/12 text-xl mb-6 pl-6 pr-4 py-4 border rounded-3xl"
+            className="w-full md:w-8/12 text-base md:text-xl mb-6 pl-4 md:pl-6 pr-4 py-3 md:py-4 border rounded-3xl"
             placeholder="Masukkan harga produk"
           />
 
@@ -209,7 +209,7 @@ function AddProduct() {
             name="tipe"
             value={formData.tipe}
             onChange={handleInputChange}
-            className="w-8/12 text-xl mb-6 pl-6 pr-4 py-4 border rounded-3xl"
+            className="w-full md:w-8/12 text-base md:text-xl mb-6 pl-4 md:pl-6 pr-4 py-3 md:py-4 border rounded-3xl"
           >
             <option value="">-- Pilih tipe --</option>
             {types.map((t) => (
@@ -225,7 +225,7 @@ function AddProduct() {
             name="status"
             value={formData.status}
             onChange={handleInputChange}
-            className="w-8/12 text-xl mb-6 pl-6 pr-4 py-4 border rounded-3xl"
+            className="w-full md:w-8/12 text-base md:text-xl mb-6 pl-4 md:pl-6 pr-4 py-3 md:py-4 border rounded-3xl"
           >
             <option value="">-- Pilih Status --</option>
             <option value="Active">Active</option>
@@ -237,7 +237,7 @@ function AddProduct() {
             Size & Stok
           </label>
           {sizes.map((s, index) => (
-            <div key={index} className="flex gap-3 mb-4 items-center w-8/12">
+            <div key={index} className="flex flex-col md:flex-row gap-3 mb-4 items-center w-full md:w-8/12">
               <input
                 type="number"
                 placeholder="Ukuran"
@@ -300,7 +300,7 @@ function AddProduct() {
           </div>
 
           {files.length > 0 && (
-            <div className="mt-4 flex gap-3">
+            <div className="mt-4 flex gap-3 flex-wrap justify-center md:justify-start">
               {files.map((file, index) => (
                 <img
                   key={index}
@@ -314,16 +314,16 @@ function AddProduct() {
         </div>
 
         {/* Tombol */}
-        <div className="my-6 flex justify-between px-32">
+        <div className="my-6 flex flex-col md:flex-row gap-4 justify-between px-6 md:px-32">
           <Link
             to="/admin/products"
-            className="w-4/12 py-4 px-6 text-xl border rounded-2xl text-center"
+            className="w-full md:w-4/12 py-3 md:py-4 px-4 md:px-6 text-base md:text-xl border rounded-2xl text-center"
           >
             Batalkan
           </Link>
           <button
             onClick={handleSubmit}
-            className="w-4/12 px-6 py-4 bg-black text-white text-xl rounded-2xl"
+            className="w-full md:w-4/12 py-3 md:py-4 px-4 md:px-6 text-base md:text-xl border rounded-2xl text-center"
           >
             Simpan
           </button>
